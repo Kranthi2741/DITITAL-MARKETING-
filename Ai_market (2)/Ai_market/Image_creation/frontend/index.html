@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Auto Marketing Agent</title>
+<title>MarketAI — Auto Marketing Agent</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@0.441.0/font/lucide.min.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -25,7 +26,7 @@
   .brand small { display:block; font-size:10px; color:#82a9d4; font-weight:400; margin-top:3px; }
   .nav-item { display:flex; gap:13px; align-items:center; padding:13px 14px; margin:5px 0; border-radius:9px; color:#9bb9d9; font-size:14px; cursor:pointer; }
   .nav-item.active, .nav-item:hover { color:#fff; background:linear-gradient(100deg,#3342a8,#7136dc); box-shadow:0 0 18px rgba(111,68,255,.28); }
-  .nav-icon { width:20px; text-align:center; }
+  .nav-icon { width:20px; text-align:center; font-size:17px; display:flex; align-items:center; justify-content:center; }
   .sidebar-user { position:absolute; bottom:22px; left:22px; right:16px; color:#c9e1ff; font-size:12px; }
   .sidebar-user small { color:#8ab1db; display:block; margin-top:3px; }
   .logout-btn { width:100%; margin-top:14px; padding:9px 11px; border:1px solid rgba(105,180,244,.28); border-radius:8px; background:transparent; color:#9bc4ea; box-shadow:none; font-size:12px; text-align:left; }
@@ -41,7 +42,18 @@
   .stat-strip { display:flex; gap:10px; max-width:920px; margin:18px auto; }
   .stat { flex:1; padding:13px; border:1px solid rgba(64,143,219,.23); border-radius:10px; background:rgba(7,28,56,.72); color:#96badf; font-size:11px; }
   .stat strong { display:block; color:#fff; font-size:20px; margin-top:4px; }
-  @media(max-width:700px){ body{padding-left:0;padding-right:0}.app-sidebar{display:none}.dashboard-aside{display:none} }
+  @media(max-width:700px){
+    body{padding-left:0;padding-right:0}
+    .app-sidebar{transform:translateX(-100%);transition:transform .25s ease}
+    .app-sidebar.open{transform:translateX(0)}
+    .dashboard-aside{display:none}
+    .mob-overlay{display:block}
+    .hamburger{display:flex}
+  }
+  .hamburger{display:none;position:fixed;top:14px;left:14px;z-index:20;width:40px;height:40px;border-radius:9px;background:rgba(3,14,31,.92);border:1px solid rgba(72,139,205,.3);align-items:center;justify-content:center;cursor:pointer;padding:0;box-shadow:none}
+  .hamburger:hover{background:rgba(30,80,140,.6);transform:none}
+  .hamburger i{font-size:20px;color:#c9e1ff}
+  .mob-overlay{display:none;position:fixed;inset:0;z-index:7;background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
   header {
     max-width: 1440px;
     margin: 0 auto;
@@ -71,6 +83,8 @@
     box-shadow: 0 14px 40px rgba(0, 0, 0, .22), inset 0 1px rgba(255,255,255,.03);
   }
   .schedule-row { max-width: 920px; flex-wrap:wrap; }
+  .row-label { max-width:920px; margin:22px auto 6px; color:#7aaad0; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; display:flex; align-items:center; gap:6px; }
+  .row-label i { font-size:14px; }
   .schedule-row input[type=text] { min-width:260px; }
   .photo-row { max-width: 920px; margin-bottom: 28px; display:grid; grid-template-columns:minmax(220px, 1fr) minmax(300px, 2fr); }
   .photo-row input[type=file] { min-width: 0; }
@@ -356,6 +370,10 @@
   .section-head h2 { font-size:30px; color:#e9f5ff; letter-spacing:-.7px; }
   .section-head p { color:#86a9cc; font-size:14px; margin-top:7px; }
   .data-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(245px,1fr)); gap:14px; }
+  .skeleton { background:linear-gradient(90deg,rgba(20,50,90,.6) 25%,rgba(40,90,150,.4) 50%,rgba(20,50,90,.6) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:10px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .skeleton-card { height:138px; margin-bottom:14px; }
+  .skeleton-row  { height:64px;  margin-bottom:11px; }
   .data-card { min-height:138px; padding:18px; border:1px solid rgba(77,151,221,.24); border-radius:13px; background:rgba(7,28,56,.75); }
   .data-card h3 { color:#eaf6ff; font-size:15px; margin-bottom:8px; }
   .data-card p,.muted { color:#8fb0d0; font-size:12px; line-height:1.55; }
@@ -389,7 +407,11 @@
   .calendar-legend { display:flex; gap:15px; flex-wrap:wrap; margin-top:12px; color:#8fb1d2; font-size:11px; }
   .calendar-legend span::before { content:""; display:inline-block; width:8px; height:8px; margin-right:5px; border-radius:50%; background:#645aed; }
   .calendar-legend .created::before { background:#51df9a; }.calendar-legend .queued::before { background:#55aeff; }.calendar-legend .failed::before { background:#ff7282; }
-  .settings-form { max-width:580px; padding:22px; border:1px solid rgba(77,151,221,.24); border-radius:14px; background:rgba(7,28,56,.75); }
+  .settings-form { max-width:100%; padding:28px 32px; border:1px solid rgba(77,151,221,.24); border-radius:14px; background:rgba(7,28,56,.75); display:grid; grid-template-columns:1fr 1fr; gap:0 40px; align-items:start; }
+  .settings-form .full-width { grid-column:1 / -1; }
+  .settings-form button[type=submit] { grid-column:1 / -1; margin-top:24px; width:fit-content; }
+  .settings-form #settingsStatus { grid-column:1 / -1; }
+  @media(max-width:900px){ .settings-form { grid-template-columns:1fr; } .settings-form .full-width { grid-column:1; } }
   .settings-form label { display:block; margin:15px 0 7px; color:#b9d7ef; font-size:12px; font-weight:700; }
   .settings-form select { width:100%; padding:12px; color:#e8f5ff; background:#06182e; border:1px solid #1b4167; border-radius:9px; }
   .toggle-row { display:flex; align-items:center; gap:9px; margin:18px 0; color:#b9d7ef; font-size:13px; }
@@ -422,6 +444,8 @@
 </style>
 </head>
 <body>
+<button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu"><i class="icon-menu"></i></button>
+<div class="mob-overlay" id="mobOverlay" onclick="toggleMobileNav()"></div>
 
 <section id="authGate" aria-label="Account access">
   <div class="auth-showcase">
@@ -467,15 +491,15 @@
 
 <aside class="app-sidebar">
   <div class="brand"><span class="brand-mark">✦</span><div>MarketAI<small>Auto Marketing Agent</small></div></div>
-  <div class="nav-item active" data-view="dashboard"><span class="nav-icon">⌂</span>Dashboard</div>
-  <div class="nav-item" data-view="campaigns"><span class="nav-icon">◈</span>Campaigns</div>
-  <div class="nav-item" data-view="agents"><span class="nav-icon">♧</span>Agents</div>
-  <div class="nav-item" data-view="library"><span class="nav-icon">▣</span>Content Library</div>
-  <div class="nav-item" data-view="calendar"><span class="nav-icon">□</span>Calendar</div>
-  <div class="nav-item" data-view="analytics"><span class="nav-icon">⌁</span>Analytics</div>
-  <div class="nav-item" data-view="integrations"><span class="nav-icon">⚙</span>Integrations</div>
-  <div class="nav-item" data-view="settings"><span class="nav-icon">⚙</span>Settings</div>
-  <div class="nav-item" id="adminNav" data-view="admin" style="display:none"><span class="nav-icon">&#128101;</span>Users</div>
+  <div class="nav-item active" data-view="dashboard"><i class="nav-icon icon-layout-dashboard"></i>Dashboard</div>
+  <div class="nav-item" data-view="campaigns"><i class="nav-icon icon-megaphone"></i>Campaigns</div>
+  <div class="nav-item" data-view="agents"><i class="nav-icon icon-cpu"></i>Agents</div>
+  <div class="nav-item" data-view="library"><i class="nav-icon icon-library"></i>Content Library</div>
+  <div class="nav-item" data-view="calendar"><i class="nav-icon icon-calendar-days"></i>Calendar</div>
+  <div class="nav-item" data-view="analytics"><i class="nav-icon icon-bar-chart-2"></i>Analytics</div>
+  <div class="nav-item" data-view="integrations"><i class="nav-icon icon-plug"></i>Integrations</div>
+  <div class="nav-item" data-view="settings"><i class="nav-icon icon-settings"></i>Settings</div>
+  <div class="nav-item" id="adminNav" data-view="admin" style="display:none"><i class="nav-icon icon-users"></i>Users</div>
   <div class="sidebar-user"><span id="workspaceUser">Your Workspace</span><small>Marketing Workspace</small><button class="logout-btn" type="button" onclick="logoutWorkspace()">↪ Log out</button></div>
 </aside>
 
@@ -504,6 +528,7 @@
   <p class="sub">Plan. Create. Automate. Grow with AI Agents.</p>
 </header>
 
+<p class="row-label" id="scheduleRowLabel"><i class="icon-sparkles"></i> Campaign Generator</p>
 <div class="input-row schedule-row" id="scheduleRow">
   <span id="scheduleUpload"><input type="file" id="scheduleFile" accept=".xlsx,.xlsm" />
   <button id="uploadBtn" onclick="uploadSchedule()">Upload Schedule</button></span>
@@ -511,6 +536,7 @@
   <button id="runBtn" type="button" onclick="runCampaign()">Generate</button>
 </div>
 
+<p class="row-label"><i class="icon-image-plus"></i> Photo Post — upload a photo and describe it</p>
 <div class="input-row photo-row">
   <input type="file" id="imageFiles" accept="image/jpeg,image/png,image/webp" multiple />
   <input type="text" id="photoPrompt" placeholder="Describe this photo, e.g. Write a post for our beach-cleanup visit" />
@@ -552,43 +578,47 @@
 <main id="settingsView" class="app-view">
   <div class="section-head"><div><h2>Workspace Settings</h2><p>Set defaults for campaign production and your brand kit.</p></div></div>
   <form class="settings-form" id="settingsForm">
-    <label for="workspaceName">Workspace name</label>
-    <input class="auth-field" id="workspaceName" required>
-    <label for="defaultPlatform">Default platform</label>
-    <select id="defaultPlatform"><option>Instagram</option><option>LinkedIn</option><option>Instagram and LinkedIn</option></select>
-    <label class="toggle-row"><input type="checkbox" id="autoPublish"> Automatically publish approved campaigns</label>
+    <!-- LEFT COLUMN -->
+    <div>
+      <label for="workspaceName">Workspace name</label>
+      <input class="auth-field" id="workspaceName" required style="width:100%">
+      <label for="defaultPlatform">Default platform</label>
+      <select id="defaultPlatform" style="width:100%;padding:12px;color:#e8f5ff;background:#06182e;border:1px solid #1b4167;border-radius:9px"><option>Instagram</option><option>LinkedIn</option><option>Instagram and LinkedIn</option></select>
+      <label class="toggle-row" style="margin-top:18px"><input type="checkbox" id="autoPublish"> Automatically publish approved campaigns</label>
 
-    <div style="margin:28px 0 10px;padding-top:20px;border-top:1px solid rgba(77,151,221,.24);color:#e9f5ff;font-size:15px;font-weight:700;">Brand Kit</div>
-    <p class="muted" style="margin-bottom:16px">These values are used by the Compositor to render your brand on every generated image.</p>
-
-    <label for="brandLogoFile" style="display:block;margin:0 0 7px;color:#b9d7ef;font-size:12px;font-weight:700">Brand logo (PNG/JPG/WebP)</label>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
-      <input type="file" id="brandLogoFile" accept="image/png,image/jpeg,image/webp" style="flex:1;padding:9px;border:1px solid #1b4167;border-radius:9px;background:#06182e;color:#e8f5ff;font-size:13px">
-      <button type="button" id="uploadLogoBtn" onclick="uploadLogo()" style="padding:10px 18px;font-size:13px">Upload</button>
+      <div style="margin:28px 0 10px;padding-top:20px;border-top:1px solid rgba(77,151,221,.24);color:#e9f5ff;font-size:15px;font-weight:700">General</div>
+      <label for="brandName">Brand name</label>
+      <input class="auth-field" id="brandName" placeholder="e.g. proRITHM" style="width:100%">
+      <label for="brandTagline">Brand tagline</label>
+      <input class="auth-field" id="brandTagline" placeholder="e.g. Connected Care. Real Impact." style="width:100%">
+      <label for="brandFont">Brand font style</label>
+      <select class="auth-field" id="brandFont" style="width:100%;background:#06182e;color:#e8f5ff;border:1px solid #1b4167">
+        <option value="Modern Sans-Serif">Modern Sans-Serif (clean, corporate)</option>
+        <option value="Bold Geometric">Bold Geometric (strong, impactful)</option>
+        <option value="Elegant Serif">Elegant Serif (premium, trustworthy)</option>
+        <option value="Humanist Sans">Humanist Sans (friendly, approachable)</option>
+        <option value="Condensed Bold">Condensed Bold (energetic, sports)</option>
+        <option value="Medical Clean">Medical Clean (clinical, professional)</option>
+      </select>
     </div>
-    <div id="logoPreviewWrap" style="display:none;margin-bottom:18px;padding:10px;border:1px solid rgba(77,151,221,.2);border-radius:9px;background:rgba(7,28,56,.5)">
-      <div style="font-size:11px;color:#86a9cc;margin-bottom:6px">Current logo</div>
-      <img id="logoPreviewImg" src="" style="max-height:60px;max-width:220px;border-radius:6px" />
-    </div>
-    <p class="muted" id="logoUploadStatus" style="margin-bottom:16px"></p>
 
-    <label for="brandName">Brand name</label>
-    <input class="auth-field" id="brandName" placeholder="e.g. proRITHM">
+    <!-- RIGHT COLUMN -->
+    <div>
+      <div style="color:#e9f5ff;font-size:15px;font-weight:700;margin-bottom:10px">Brand Kit</div>
+      <p class="muted" style="margin-bottom:16px">Used by the Compositor to render your brand on every generated image.</p>
 
-    <label for="brandTagline">Brand tagline</label>
-    <input class="auth-field" id="brandTagline" placeholder="e.g. Connected Care. Real Impact.">
+      <label style="display:block;margin:0 0 7px;color:#b9d7ef;font-size:12px;font-weight:700">Brand logo (PNG/JPG/WebP)</label>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <input type="file" id="brandLogoFile" accept="image/png,image/jpeg,image/webp" style="flex:1;padding:9px;border:1px solid #1b4167;border-radius:9px;background:#06182e;color:#e8f5ff;font-size:13px">
+        <button type="button" id="uploadLogoBtn" onclick="uploadLogo()" style="padding:10px 18px;font-size:13px">Upload</button>
+      </div>
+      <div id="logoPreviewWrap" style="display:none;margin-bottom:12px;padding:10px;border:1px solid rgba(77,151,221,.2);border-radius:9px;background:rgba(7,28,56,.5)">
+        <div style="font-size:11px;color:#86a9cc;margin-bottom:6px">Current logo</div>
+        <img id="logoPreviewImg" src="" style="max-height:60px;max-width:220px;border-radius:6px" />
+      </div>
+      <p class="muted" id="logoUploadStatus" style="margin-bottom:16px"></p>
 
-    <label for="brandFont">Brand font style</label>
-    <select class="auth-field" id="brandFont" style="background:#06182e;color:#e8f5ff;border:1px solid #1b4167">
-      <option value="Modern Sans-Serif">Modern Sans-Serif (clean, corporate)</option>
-      <option value="Bold Geometric">Bold Geometric (strong, impactful)</option>
-      <option value="Elegant Serif">Elegant Serif (premium, trustworthy)</option>
-      <option value="Humanist Sans">Humanist Sans (friendly, approachable)</option>
-      <option value="Condensed Bold">Condensed Bold (energetic, sports)</option>
-      <option value="Medical Clean">Medical Clean (clinical, professional)</option>
-    </select>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:4px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:4px">
       <div>
         <label for="brandPrimaryColor" style="display:block;margin:15px 0 7px;color:#b9d7ef;font-size:12px;font-weight:700">Primary color</label>
         <div style="display:flex;align-items:center;gap:8px">
@@ -612,14 +642,15 @@
       </div>
     </div>
 
-    <div style="margin-top:24px;padding:14px;border:1px solid rgba(77,151,221,.2);border-radius:10px;background:rgba(7,28,56,.5)">
-      <div style="font-size:12px;color:#86a9cc;margin-bottom:10px">Preview</div>
-      <div id="brandPreview" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <div id="previewBar" style="padding:10px 18px;border-radius:8px;font-weight:700;font-size:15px;color:#fff">Brand Name</div>
-        <div id="previewCta" style="padding:9px 22px;border-radius:20px;font-weight:700;font-size:13px;color:#fff">Learn More</div>
-        <div id="previewAccent" style="width:18px;height:18px;border-radius:50%"></div>
+      <div style="margin-top:16px;padding:14px;border:1px solid rgba(77,151,221,.2);border-radius:10px;background:rgba(7,28,56,.5)">
+        <div style="font-size:12px;color:#86a9cc;margin-bottom:10px">Preview</div>
+        <div id="brandPreview" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div id="previewBar" style="padding:10px 18px;border-radius:8px;font-weight:700;font-size:15px;color:#fff">Brand Name</div>
+          <div id="previewCta" style="padding:9px 22px;border-radius:20px;font-weight:700;font-size:13px;color:#fff">Learn More</div>
+          <div id="previewAccent" style="width:18px;height:18px;border-radius:50%"></div>
+        </div>
       </div>
-    </div>
+    </div><!-- end right column -->
 
     <button type="submit" style="margin-top:24px">Save settings</button>
     <p class="muted" id="settingsStatus" style="margin-top:12px"></p>
@@ -966,6 +997,14 @@ function showView(view) {
   document.querySelectorAll(".app-view").forEach(element => element.classList.toggle("active", element.id === `${view}View`));
   document.querySelectorAll(".nav-item[data-view]").forEach(element => element.classList.toggle("active", element.dataset.view === view));
   document.querySelector(".dashboard-aside").style.display = view === "dashboard" ? "block" : "none";
+  const skeletonTargets = {
+    campaigns: "campaignList", library: "libraryList",
+    analytics: "analyticsGrid", integrations: "integrationGrid"
+  };
+  if (skeletonTargets[view]) {
+    document.getElementById(skeletonTargets[view]).innerHTML =
+      [1,2,3].map(() => `<div class="skeleton skeleton-${view==='campaigns'||view==='library'?'row':'card'}"></div>`).join('');
+  }
   if (view === "campaigns") renderCampaigns("campaignList");
   if (view === "library") renderCampaigns("libraryList", true);
   if (view === "agents") renderAgents();
@@ -975,7 +1014,16 @@ function showView(view) {
   if (view === "settings") renderSettings();
   if (view === "admin") renderAdmin();
 }
-document.querySelectorAll(".nav-item[data-view]").forEach(item => item.addEventListener("click", () => showView(item.dataset.view)));
+document.querySelectorAll(".nav-item[data-view]").forEach(item => item.addEventListener("click", () => {
+  showView(item.dataset.view);
+  // close mobile nav if open
+  const sidebar = document.querySelector('.app-sidebar');
+  const overlay = document.getElementById('mobOverlay');
+  if (sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+    overlay.style.display = 'none';
+  }
+}));
 document.getElementById("calendarPrev").addEventListener("click", () => { calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1); renderCalendar(); });
 document.getElementById("calendarNext").addEventListener("click", () => { calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1); renderCalendar(); });
 document.getElementById("calendarToday").addEventListener("click", () => { const now = new Date(); calendarCursor = new Date(now.getFullYear(), now.getMonth(), 1); renderCalendar(); });
@@ -1615,6 +1663,23 @@ async function createUser() {
     document.getElementById("createUserForm").style.display = "none";
     renderAdmin();
   } catch { msg.textContent = "Cannot reach server."; }
+}
+
+function toggleMobileNav() {
+  const sidebar = document.querySelector('.app-sidebar');
+  const overlay = document.getElementById('mobOverlay');
+  const isOpen = sidebar.classList.toggle('open');
+  overlay.style.display = isOpen ? 'block' : 'none';
+}
+
+async function kickoffDueCampaigns() {
+  try {
+    const res = await fetch('/api/schedule/run-due', { method: 'POST' });
+    const data = await res.json();
+    if (data.queued && data.queued.length) {
+      runCampaign(data.queued);
+    }
+  } catch { /* schedule not critical */ }
 }
 
 async function deleteUser(id) {
