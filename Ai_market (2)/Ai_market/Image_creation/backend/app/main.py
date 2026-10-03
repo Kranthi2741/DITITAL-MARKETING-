@@ -28,8 +28,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from app.graph import run_campaign, stream_campaign
+from app import auth as auth_module
 
 app = FastAPI()
+
+# Initialise DB tables + seed admin on startup
+try:
+    auth_module.init_db()
+except Exception as _db_err:
+    print(f"[WARN] MySQL not available: {_db_err}. Auth endpoints will return 503.")
 DATA_DIR = Path("app_data")
 DATA_DIR.mkdir(exist_ok=True)
 SCHEDULE_PATH = DATA_DIR / "schedule.json"
@@ -484,6 +491,118 @@ def build_log_message(node_name: str, node_state: dict) -> str:
         errors = "; ".join(filter(None, [node_state.get("publish_error"), node_state.get("linkedin_error")]))
         return f"Publishing failed — {errors or 'unknown error'}"
     return "Working..."
+
+
+# ── Auth helpers ─────────────────────────────────────────────────────────────
+
+def _require_token(request):
+    """Extract and validate Bearer token from Authorization header."""
+    from fastapi import Request, HTTPException
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing token")
+    data = auth_module.decode_token(auth_header[7:])
+    if not data:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return data
+
+
+# ── Auth routes ───────────────────────────────────────────────────────────────
+
+from fastapi import Request, HTTPException
+
+
+@app.post("/api/auth/login")
+async def login(payload: dict):
+    email = (payload.get("email") or "").strip().lower()
+    password = payload.get("password") or ""
+    user = auth_module.get_user_by_email(email)
+    if not user or not auth_module.verify_password(password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    token = auth_module.create_token(user["id"], user["email"], user["role"])
+    return {
+        "token": token,
+        "email": user["email"],
+        "role": user["role"],
+        "must_change": bool(user["must_change"]),
+    }
+
+
+@app.post("/api/auth/setup-password")
+async def setup_password(request: Request, payload: dict):
+    claims = _require_token(request)
+    new_password = payload.get("password") or ""
+    if not auth_module.password_strong(new_password):
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters with uppercase, lowercase, digit, and special character.")
+    auth_module.update_password(claims["sub"], new_password)
+    return {"ok": True}
+
+
+@app.get("/api/auth/me")
+async def me(request: Request):
+    claims = _require_token(request)
+    user = auth_module.get_user_by_id(claims["sub"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"id": user["id"], "email": user["email"], "role": user["role"], "must_change": bool(user["must_change"])}
+
+
+# ── Admin-only user management ────────────────────────────────────────────────
+
+@app.get("/api/admin/users")
+async def admin_list_users(request: Request):
+    claims = _require_token(request)
+    if claims.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return {"users": auth_module.list_users()}
+
+
+@app.post("/api/admin/users")
+async def admin_create_user(request: Request, payload: dict):
+    claims = _require_token(request)
+    if claims.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    email = (payload.get("email") or "").strip().lower()
+    temp_password = payload.get("temp_password") or ""
+    if not email or not temp_password:
+        raise HTTPException(status_code=400, detail="email and temp_password are required")
+    if auth_module.get_user_by_email(email):
+        raise HTTPException(status_code=409, detail="Email already exists")
+    user = auth_module.create_user(email, temp_password)
+    return {"ok": True, "user": user}
+
+
+@app.delete("/api/admin/users/{user_id}")
+async def admin_delete_user(request: Request, user_id: int):
+    claims = _require_token(request)
+    if claims.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    auth_module.delete_user(user_id)
+    return {"ok": True}
+
+
+@app.post("/api/logs/campaign")
+async def log_campaign(request: Request, payload: dict):
+    claims = _require_token(request)
+    try:
+        auth_module.log_campaign(
+            user_id=claims["sub"],
+            email=claims["email"],
+            role=claims["role"],
+            prompt=payload.get("prompt", ""),
+            image_count=int(payload.get("image_count", 0)),
+        )
+    except Exception:
+        pass  # never block the campaign
+    return {"ok": True}
+
+
+@app.get("/api/admin/logs")
+async def admin_get_logs(request: Request):
+    claims = _require_token(request)
+    if claims.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return {"logs": auth_module.list_campaign_logs()}
 
 
 @app.websocket("/ws/campaign")

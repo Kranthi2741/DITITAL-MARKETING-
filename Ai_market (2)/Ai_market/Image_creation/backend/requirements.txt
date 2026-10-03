@@ -10,3 +10,5 @@ websockets
 openpyxl
 python-multipart
 moviepy
+mysql-connector-python
+bcrypt

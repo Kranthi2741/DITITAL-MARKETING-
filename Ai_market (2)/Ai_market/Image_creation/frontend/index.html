@@ -336,6 +336,19 @@
   .auth-note { min-height:18px; margin-top:13px; font-size:12px; color:#ff9eae; }
   .auth-terms { color:#799abd; font-size:11px; line-height:1.55; margin-top:16px; }
   .auth-terms a { color:#68c7ff; }
+  /* Password setup screen */
+  #setupGate { position:fixed; inset:0; z-index:99; display:none; align-items:center; justify-content:center; background:#030915; }
+  #setupGate.active { display:flex; }
+  .setup-card { width:min(100%,420px); padding:40px; border:1px solid rgba(77,151,221,.3); border-radius:18px; background:rgba(6,21,43,.95); }
+  .setup-card h2 { font-size:22px; color:#e4f4ff; margin-bottom:8px; }
+  .setup-card p { color:#86a9cc; font-size:13px; margin-bottom:24px; line-height:1.6; }
+  /* Admin user management */
+  .user-table { width:100%; border-collapse:collapse; margin-top:16px; }
+  .user-table th { color:#7aaad0; font-size:11px; text-transform:uppercase; padding:8px 12px; border-bottom:1px solid rgba(77,151,221,.2); text-align:left; }
+  .user-table td { padding:10px 12px; border-bottom:1px solid rgba(77,151,221,.1); color:#c9e1ff; font-size:13px; }
+  .user-table tr:hover td { background:rgba(30,80,140,.3); }
+  .del-btn { background:rgba(193,54,73,.28); border:1px solid rgba(255,110,128,.42); color:#ffd6dc; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; }
+  .del-btn:hover { background:rgba(193,54,73,.55); transform:none; }
   @media(max-width:800px) { #authGate { grid-template-columns:1fr; } .auth-showcase { display:none; } .auth-panel { min-height:100vh; } }
   .app-view { display:none; max-width:1440px; margin:0 auto; padding:38px 48px 48px; }
   .app-view.active { display:block; }
@@ -381,6 +394,31 @@
   .settings-form select { width:100%; padding:12px; color:#e8f5ff; background:#06182e; border:1px solid #1b4167; border-radius:9px; }
   .toggle-row { display:flex; align-items:center; gap:9px; margin:18px 0; color:#b9d7ef; font-size:13px; }
   @media(max-width:700px) { .app-view { padding:28px 20px 36px; } .calendar-day { min-height:82px; padding:5px; } .calendar-event { font-size:8px; } }
+
+  /* Analytics campaign row — clickable */
+  .campaign-row { cursor: pointer; transition: background .15s, border-color .15s; }
+  .campaign-row:hover { background: rgba(30,80,140,.55); border-color: rgba(77,151,221,.5); }
+
+  /* Analytics detail modal */
+  #analyticsModal { display:none; position:fixed; inset:0; z-index:50; background:rgba(2,8,22,.82); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
+  #analyticsModal.open { display:flex; }
+  .analytics-modal-box { position:relative; width:min(92vw,820px); max-height:90vh; overflow-y:auto; background:linear-gradient(160deg,#071a38,#040e22); border:1px solid rgba(77,151,221,.35); border-radius:18px; padding:28px; box-shadow:0 24px 60px rgba(0,0,0,.6); }
+  .analytics-modal-box .modal-close { position:absolute; top:16px; right:18px; background:none; border:none; color:#6a8fb0; font-size:20px; cursor:pointer; padding:0; box-shadow:none; }
+  .analytics-modal-box .modal-close:hover { color:#e0f0ff; transform:none; }
+  .analytics-modal-inner { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; margin-top:18px; }
+  @media(max-width:600px){ .analytics-modal-inner { grid-template-columns:1fr; } }
+  .analytics-modal-img { width:100%; border-radius:12px; border:1px solid rgba(77,151,221,.3); display:block; }
+  .analytics-modal-img.placeholder { min-height:200px; background:rgba(7,28,56,.8); display:flex; align-items:center; justify-content:center; color:#4a7aaa; font-size:13px; border-radius:12px; }
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px; }
+  .stat-pill { padding:12px 14px; border-radius:10px; background:rgba(7,28,56,.9); border:1px solid rgba(77,151,221,.22); }
+  .stat-pill .sp-label { color:#7aaad0; font-size:11px; margin-bottom:4px; }
+  .stat-pill .sp-value { color:#e4f4ff; font-size:22px; font-weight:700; }
+  .platform-label { color:#86a9cc; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; margin:14px 0 8px; }
+  .modal-caption { margin-top:14px; color:#b9d4f0; font-size:13px; line-height:1.6; padding:12px; border:1px solid rgba(77,151,221,.18); border-radius:9px; background:rgba(7,28,56,.6); }
+  .modal-comments { margin-top:14px; }
+  .modal-comments h4 { color:#86a9cc; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px; }
+  .modal-comment-item { padding:8px 10px; margin-bottom:6px; border-radius:8px; background:rgba(7,28,56,.7); border:1px solid rgba(77,151,221,.15); font-size:12px; color:#b9d4ee; }
+  .modal-comment-item span { color:#73caff; font-weight:600; }
 </style>
 </head>
 <body>
@@ -391,36 +429,41 @@
     <div class="auth-copy">
       <h2>Your marketing,<br><span>in motion.</span></h2>
       <p>Turn a simple idea into a campaign with strategy, creative production, quality review, and publishing in one focused workspace.</p>
-      <div class="auth-points"><span>✦ AI campaign planning</span><span>◈ Brand-ready visuals</span><span>⌁ Publishing workflows</span></div>
     </div>
-    <div class="auth-quote">“A calmer way to move from a campaign idea to content your audience can actually see.”</div>
+    <div class="auth-quote">A calmer way to move from a campaign idea to content your audience can actually see.</div>
   </div>
   <div class="auth-panel">
     <div class="auth-card">
       <div class="auth-brand"><span class="brand-mark">✦</span>MarketAI</div>
-      <h1 id="authTitle">Welcome back</h1>
-      <p id="authSubtitle">Sign in to continue to your marketing workspace.</p>
-      <div class="auth-tabs" role="tablist">
-        <button class="auth-tab active" data-auth-tab="login" type="button">Log in</button>
-        <button class="auth-tab" data-auth-tab="signup" type="button">Create account</button>
-      </div>
-      <form class="auth-form active" id="loginForm">
-        <label class="auth-label" for="loginEmail">Work email</label><input class="auth-field" id="loginEmail" type="email" autocomplete="email" placeholder="you@company.com" required>
-        <label class="auth-label" for="loginPassword">Password</label><input class="auth-field" id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" required>
-        <div class="auth-row"><label><input type="checkbox"> Remember me</label><a href="#" onclick="showAuthMessage('Password reset needs to be connected to your authentication service.');return false;">Forgot password?</a></div>
-        <button class="auth-submit" type="submit">Log in to workspace</button>
-      </form>
-      <form class="auth-form" id="signupForm">
-        <label class="auth-label" for="signupName">Your name</label><input class="auth-field" id="signupName" type="text" autocomplete="name" placeholder="Kranthi Kumar" required>
-        <label class="auth-label" for="signupEmail">Work email</label><input class="auth-field" id="signupEmail" type="email" autocomplete="email" placeholder="you@company.com" required>
-        <label class="auth-label" for="signupPassword">Create password</label><input class="auth-field" id="signupPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required>
-        <button class="auth-submit" style="margin-top:22px" type="submit">Create workspace</button>
-        <p class="auth-terms">By creating an account, you agree to the Terms of Service and Privacy Policy.</p>
+      <h1>Welcome back</h1>
+      <p>Sign in with your workspace credentials.</p>
+      <form id="loginForm">
+        <label class="auth-label" for="loginEmail">Email</label>
+        <input class="auth-field" id="loginEmail" type="email" autocomplete="email" placeholder="you@company.com" required>
+        <label class="auth-label" for="loginPassword">Password</label>
+        <input class="auth-field" id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+        <button class="auth-submit" style="margin-top:22px" type="submit">Sign in</button>
       </form>
       <div class="auth-note" id="authMessage" aria-live="polite"></div>
     </div>
   </div>
 </section>
+
+<div id="setupGate">
+  <div class="setup-card">
+    <div class="auth-brand" style="margin-bottom:20px"><span class="brand-mark">✦</span>MarketAI</div>
+    <h2>Set up your password</h2>
+    <p>This is your first login. Create a new password to continue. Min 8 characters with uppercase, lowercase, a number, and a special character.</p>
+    <form id="setupForm">
+      <label class="auth-label" for="setupPassword">New password</label>
+      <input class="auth-field" id="setupPassword" type="password" placeholder="New password" required style="width:100%;margin-bottom:14px">
+      <label class="auth-label" for="setupConfirm">Confirm password</label>
+      <input class="auth-field" id="setupConfirm" type="password" placeholder="Confirm password" required style="width:100%;margin-bottom:20px">
+      <button type="submit" style="width:100%">Save password &amp; continue</button>
+    </form>
+    <div class="auth-note" id="setupMessage" aria-live="polite"></div>
+  </div>
+</div>
 
 <aside class="app-sidebar">
   <div class="brand"><span class="brand-mark">✦</span><div>MarketAI<small>Auto Marketing Agent</small></div></div>
@@ -432,6 +475,7 @@
   <div class="nav-item" data-view="analytics"><span class="nav-icon">⌁</span>Analytics</div>
   <div class="nav-item" data-view="integrations"><span class="nav-icon">⚙</span>Integrations</div>
   <div class="nav-item" data-view="settings"><span class="nav-icon">⚙</span>Settings</div>
+  <div class="nav-item" id="adminNav" data-view="admin" style="display:none"><span class="nav-icon">&#128101;</span>Users</div>
   <div class="sidebar-user"><span id="workspaceUser">Your Workspace</span><small>Marketing Workspace</small><button class="logout-btn" type="button" onclick="logoutWorkspace()">↪ Log out</button></div>
 </aside>
 
@@ -460,9 +504,9 @@
   <p class="sub">Plan. Create. Automate. Grow with AI Agents.</p>
 </header>
 
-<div class="input-row schedule-row">
-  <input type="file" id="scheduleFile" accept=".xlsx,.xlsm" />
-  <button id="uploadBtn" onclick="uploadSchedule()">Upload Schedule</button>
+<div class="input-row schedule-row" id="scheduleRow">
+  <span id="scheduleUpload"><input type="file" id="scheduleFile" accept=".xlsx,.xlsm" />
+  <button id="uploadBtn" onclick="uploadSchedule()">Upload Schedule</button></span>
   <input type="text" id="campaignPrompt" placeholder="Or enter a campaign prompt" />
   <button id="runBtn" type="button" onclick="runCampaign()">Generate</button>
 </div>
@@ -582,6 +626,14 @@
   </form>
 </main>
 
+<!-- Analytics detail modal -->
+<div id="analyticsModal" onclick="if(event.target===this)closeAnalyticsModal()">
+  <div class="analytics-modal-box">
+    <button class="modal-close" onclick="closeAnalyticsModal()">✕</button>
+    <div id="analyticsModalContent"></div>
+  </div>
+</div>
+
 <div id="panel">
   <button class="close-btn" onclick="closePanel()">✕</button>
   <h2 id="panelTitle">Agent</h2>
@@ -590,58 +642,87 @@
 </div>
 
 <script>
-const authGate = document.getElementById("authGate");
-const authMessage = document.getElementById("authMessage");
+// Auth state
+let _authToken = sessionStorage.getItem("mkt_token") || "";
+let _authRole  = sessionStorage.getItem("mkt_role")  || "";
+let _authEmail = sessionStorage.getItem("mkt_email") || "";
 
-function showAuthMessage(message) {
-  authMessage.textContent = message;
+function authHeaders() {
+  return { "Content-Type": "application/json", "Authorization": "Bearer " + _authToken };
 }
 
-function setAuthTab(tab) {
-  document.querySelectorAll(".auth-tab").forEach(button => button.classList.toggle("active", button.dataset.authTab === tab));
-  document.getElementById("loginForm").classList.toggle("active", tab === "login");
-  document.getElementById("signupForm").classList.toggle("active", tab === "signup");
-  document.getElementById("authTitle").textContent = tab === "login" ? "Welcome back" : "Create your account";
-  document.getElementById("authSubtitle").textContent = tab === "login" ? "Sign in to continue to your marketing workspace." : "Start building campaigns with your AI marketing workspace.";
-  showAuthMessage("");
+function showAuthMessage(msg) {
+  document.getElementById("authMessage").textContent = msg;
 }
 
-function enterWorkspace(name) {
-  document.getElementById("workspaceUser").textContent = name || "Your Workspace";
-  authGate.classList.add("hidden");
-  kickoffDueCampaigns();
+function enterWorkspace(email, role) {
+  try {
+    _authEmail = email; _authRole = role;
+    const wu = document.getElementById("workspaceUser");
+    if (wu) wu.textContent = email.split("@")[0];
+    document.getElementById("authGate").classList.add("hidden");
+    const adminNav = document.getElementById("adminNav");
+    if (adminNav) adminNav.style.display = role === "admin" ? "flex" : "none";
+    const su = document.getElementById("scheduleUpload");
+    if (su) su.style.display = role === "admin" ? "" : "none";
+    kickoffDueCampaigns();
+  } catch(e) { console.error("enterWorkspace error:", e); }
 }
 
 function logoutWorkspace() {
+  _authToken = ""; _authRole = ""; _authEmail = "";
+  sessionStorage.removeItem("mkt_token");
+  sessionStorage.removeItem("mkt_role");
+  sessionStorage.removeItem("mkt_email");
   document.getElementById("loginForm").reset();
-  document.getElementById("signupForm").reset();
-  setAuthTab("login");
-  authGate.classList.remove("hidden");
+  document.getElementById("authGate").classList.remove("hidden");
 }
 
-async function kickoffDueCampaigns() {
+document.getElementById("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const email    = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  showAuthMessage("");
   try {
-    const result = await fetch("/api/schedule/run-due", { method: "POST" });
-    if (!result.ok) return;
-    const data = await result.json();
-    if (data.count) {
-      document.getElementById("scheduleStatus").textContent = `${data.count} scheduled campaign(s) starting now...`;
-      runCampaign(data.queued);
+    const res  = await fetch("/api/auth/login", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({email, password}) });
+    const data = await res.json();
+    if (!res.ok) { showAuthMessage(data.detail || "Login failed"); return; }
+    _authToken = data.token;
+    sessionStorage.setItem("mkt_token", data.token);
+    sessionStorage.setItem("mkt_role",  data.role);
+    sessionStorage.setItem("mkt_email", data.email);
+    if (data.must_change) {
+      document.getElementById("authGate").classList.add("hidden");
+      document.getElementById("setupGate").classList.add("active");
+    } else {
+      enterWorkspace(data.email, data.role);
     }
-  } catch { /* The dashboard still works when the backend is unavailable. */ }
-}
+  } catch { showAuthMessage("Cannot reach server. Is the backend running?"); }
+});
 
-document.querySelectorAll(".auth-tab").forEach(button => button.addEventListener("click", () => setAuthTab(button.dataset.authTab)));
-document.getElementById("loginForm").addEventListener("submit", event => {
+document.getElementById("setupForm").addEventListener("submit", async event => {
   event.preventDefault();
-  const email = document.getElementById("loginEmail").value;
-  enterWorkspace(email.split("@")[0]);
+  const pw  = document.getElementById("setupPassword").value;
+  const pw2 = document.getElementById("setupConfirm").value;
+  const msg = document.getElementById("setupMessage");
+  if (pw !== pw2) { msg.textContent = "Passwords do not match."; return; }
+  try {
+    const res  = await fetch("/api/auth/setup-password", { method:"POST", headers: authHeaders(), body: JSON.stringify({password: pw}) });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.detail || "Error saving password."; return; }
+    document.getElementById("setupGate").classList.remove("active");
+    const parts = _authToken.split(".");
+    const me = JSON.parse(atob(parts[1] + "==".slice(0, (4 - parts[1].length % 4) % 4)));
+    enterWorkspace(me.email, me.role);
+  } catch { msg.textContent = "Cannot reach server."; }
 });
-document.getElementById("signupForm").addEventListener("submit", event => {
-  event.preventDefault();
-  const name = document.getElementById("signupName").value.trim();
-  enterWorkspace(name);
-});
+
+if (_authToken) {
+  fetch("/api/auth/me", { headers: authHeaders() })
+    .then(r => r.ok ? r.json() : null)
+    .then(data => { if (data) enterWorkspace(data.email, data.role); })
+    .catch(() => {});
+}
 
 const VIEW_NAMES = { dashboard:"Dashboard", campaigns:"Campaigns", agents:"Agents", library:"Content Library", calendar:"Calendar", analytics:"Analytics", integrations:"Integrations", settings:"Settings" };
 const AGENTS = [["🧭","Planner","Turns your request into a clear campaign plan."],["📊","Strategist","Defines audience, offer, channels, and visual direction."],["🎨","Creative Director","Creates and revises the image brief."],["🖼️","Image Generator","Generates imagery and applies the proRiTHM logo."],["🔍","Quality Agent","Reviews requirements and controls retries."],["✍️","Content Agent","Writes captions and hashtags."],["🖼","Compositor","Overlays infographic layout, event details, icons and CTA onto the background."],["🎬","Video Producer","Creates motion graphics when requested."],["📤","Publisher","Publishes approved assets to configured channels."]];
@@ -697,23 +778,87 @@ async function renderCalendar() {
   drawDays(events);
 }
 
+let _analyticsRows = [];
+
 async function renderAnalytics() {
   const target = document.getElementById("analyticsGrid");
   try {
     const data = await getApi("/api/analytics");
     target.innerHTML = [["Campaigns",data.campaigns],["Approved",data.approved],["Average quality",data.average_quality == null ? "—" : `${data.average_quality}/100`],["Motion graphics",data.videos]].map(([name,value]) => `<div class="data-card"><p>${name}</p><strong>${value}</strong><span class="tag">Saved data</span></div>`).join("");
-    const rows = data.campaigns_detail || [];
+    _analyticsRows = data.campaigns_detail || [];
     const list = document.getElementById("campaignAnalytics");
-    list.innerHTML = rows.length ? rows.map(row => {
+    list.innerHTML = _analyticsRows.length ? _analyticsRows.map((row, idx) => {
       const latest = row.analytics?.latest || {};
-      const instagram = latest.instagram?.metrics || {};
-      const linkedin = latest.linkedin?.metrics || {};
-      const instagramComments = latest.instagram?.comments || [];
-      const linkedinComments = latest.linkedin?.comments || [];
-      const commentHtml = (platform, comments) => comments.length ? `<div class="comment-block"><strong>${platform} comments</strong>${comments.map(comment => `<div class="comment"><span>${escapeHtml(comment.username || comment.actor || "User")}</span>: ${escapeHtml(comment.text || "")}</div>`).join("")}</div>` : "";
-      return `<div class="campaign-card"><div><h3>${escapeHtml(row.name)}</h3><p class="muted">${escapeHtml(row.campaign_id || "")}</p></div><div class="muted"><strong>Instagram</strong>: ${instagram.like_count ?? "—"} likes · ${instagram.comments_count ?? "—"} comments · ${instagram.reach ?? "—"} reach · ${instagram.saved ?? "—"} saves · ${instagram.shares ?? "—"} shares · ${instagram.views ?? "—"} views<br><strong>LinkedIn</strong>: ${linkedin.reactions ?? "—"} reactions · ${linkedin.comments ?? "—"} comments${commentHtml("Instagram", instagramComments)}${commentHtml("LinkedIn", linkedinComments)}</div></div>`;
+      const ig = latest.instagram?.metrics || {};
+      const li = latest.linkedin?.metrics || {};
+      return `<div class="campaign-row" onclick="openAnalyticsModal(${idx})">
+        <div><h3>${escapeHtml(row.name)}</h3><small>${escapeHtml(row.campaign_id || "")}</small></div>
+        <div class="muted">
+          <strong>Instagram</strong>: ${ig.like_count ?? 0} likes · ${ig.comments_count ?? 0} comments · ${ig.reach ?? 0} reach · ${ig.saved ?? 0} saves · ${ig.shares ?? 0} shares · ${ig.views ?? 0} views<br>
+          <strong>LinkedIn</strong>: ${li.reactions ?? "—"} reactions · ${li.comments ?? "—"} comments
+        </div>
+      </div>`;
     }).join("") : emptyState("Generate and publish a campaign to begin collecting engagement.");
   } catch { target.innerHTML = emptyState("Analytics will appear after the server and asset library are available."); }
+}
+
+function openAnalyticsModal(idx) {
+  const row = _analyticsRows[idx];
+  if (!row) return;
+  const latest = row.analytics?.latest || {};
+  const ig = latest.instagram?.metrics || {};
+  const li = latest.linkedin?.metrics || {};
+  const igComments = latest.instagram?.comments || [];
+  const liComments = latest.linkedin?.comments || [];
+
+  const rawPath = row.image || "";
+  // Normalize Windows backslashes and strip leading "asset_library\\"
+  const normalized = rawPath.replace(/\\/g, "/").replace(/^asset_library\//, "");
+  const imageUrl = normalized ? `/assets/${normalized}` : null;
+
+  const imgHtml = imageUrl
+    ? `<img class="analytics-modal-img" src="${escapeHtml(imageUrl)}" onerror="this.parentElement.innerHTML='<div class=\'analytics-modal-img placeholder\'>No image preview</div>'" />`
+    : `<div class="analytics-modal-img placeholder">No image preview</div>`;
+
+  const statPill = (label, value) => `<div class="stat-pill"><div class="sp-label">${label}</div><div class="sp-value">${value ?? "—"}</div></div>`;
+
+  const commentItems = (comments) => comments.map(c =>
+    `<div class="modal-comment-item"><span>${escapeHtml(c.username || c.actor || "User")}</span>: ${escapeHtml(c.text || "")}</div>`
+  ).join("");
+
+  const caption = row.social_posts?.instagram?.caption || row.caption || "";
+
+  document.getElementById("analyticsModalContent").innerHTML = `
+    <h2 style="color:#e4f4ff;font-size:20px;margin-bottom:4px">${escapeHtml(row.name)}</h2>
+    <div style="color:#6a8fb0;font-size:12px">${escapeHtml(row.campaign_id || "")}</div>
+    <div class="analytics-modal-inner">
+      <div>${imgHtml}</div>
+      <div>
+        <div class="platform-label">Instagram</div>
+        <div class="stat-grid">
+          ${statPill("Likes", ig.like_count ?? 0)}
+          ${statPill("Comments", ig.comments_count ?? 0)}
+          ${statPill("Reach", ig.reach ?? 0)}
+          ${statPill("Saves", ig.saved ?? 0)}
+          ${statPill("Shares", ig.shares ?? 0)}
+          ${statPill("Views", ig.views ?? 0)}
+        </div>
+        <div class="platform-label" style="margin-top:18px">LinkedIn</div>
+        <div class="stat-grid">
+          ${statPill("Reactions", li.reactions ?? 0)}
+          ${statPill("Comments", li.comments ?? 0)}
+        </div>
+      </div>
+    </div>
+    ${caption ? `<div class="modal-caption">${escapeHtml(caption)}</div>` : ""}
+    ${igComments.length ? `<div class="modal-comments"><h4>Instagram Comments</h4>${commentItems(igComments)}</div>` : ""}
+    ${liComments.length ? `<div class="modal-comments"><h4>LinkedIn Comments</h4>${commentItems(liComments)}</div>` : ""}
+  `;
+  document.getElementById("analyticsModal").classList.add("open");
+}
+
+function closeAnalyticsModal() {
+  document.getElementById("analyticsModal").classList.remove("open");
 }
 
 document.getElementById("refreshAnalytics")?.addEventListener("click", async event => {
@@ -828,6 +973,7 @@ function showView(view) {
   if (view === "analytics") renderAnalytics();
   if (view === "integrations") renderIntegrations();
   if (view === "settings") renderSettings();
+  if (view === "admin") renderAdmin();
 }
 document.querySelectorAll(".nav-item[data-view]").forEach(item => item.addEventListener("click", () => showView(item.dataset.view)));
 document.getElementById("calendarPrev").addEventListener("click", () => { calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1); renderCalendar(); });
@@ -1404,7 +1550,97 @@ async function uploadSchedule() {
 // size; it no longer resets node state, scores, or logs mid-run.
 window.addEventListener("resize", renderGraph);
 renderGraph();
+
+// Admin user management
+async function showAdminTab(tab) {
+  document.getElementById("adminPanelUsers").style.display = tab === "users" ? "" : "none";
+  document.getElementById("adminPanelLogs").style.display  = tab === "logs"  ? "" : "none";
+  document.getElementById("adminTabUsers").style.background = tab === "users" ? "#1b4167" : "#0d2137";
+  document.getElementById("adminTabLogs").style.background  = tab === "logs"  ? "#1b4167" : "#0d2137";
+  if (tab === "logs") renderLogs();
+}
+
+async function renderLogs() {
+  const tbody = document.getElementById("logsBody");
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#7ec8f7">Loading…</td></tr>';
+  try {
+    const res = await fetch("/api/admin/logs", { headers: authHeaders() });
+    const data = await res.json();
+    if (!data.logs || !data.logs.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#7ec8f7">No logs yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.logs.map((l, i) => `<tr>
+      <td>${i+1}</td>
+      <td>${l.email}</td>
+      <td><span style="padding:2px 8px;border-radius:12px;font-size:11px;background:${l.role==='admin'?'#1a3a5c':'#0d2137'};color:#7ec8f7">${l.role}</span></td>
+      <td><span style="padding:2px 8px;border-radius:12px;font-size:11px;background:${l.input_type==='image+prompt'?'#2d1a5c':'#0d2137'};color:#a78bfa">${l.input_type}</span></td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(l.prompt||'').replace(/"/g,'&quot;')}">${l.prompt || '<em style="color:#555">—</em>'}</td>
+      <td style="text-align:center">${l.image_count||0}</td>
+      <td style="white-space:nowrap;font-size:12px;color:#7ec8f7">${new Date(l.started_at).toLocaleString()}</td>
+    </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#f87171">Failed to load logs.</td></tr>';
+  }
+}
+
+async function renderAdmin() {
+  const wrap = document.getElementById("userTableWrap");
+  try {
+    const res  = await fetch("/api/admin/users", { headers: authHeaders() });
+    const data = await res.json();
+    if (!res.ok) { wrap.innerHTML = "<p class='muted'>" + escapeHtml(data.detail) + "</p>"; return; }
+    wrap.innerHTML = "<table class='user-table'><thead><tr><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>"
+      + data.users.map(u => `<tr><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.role)}</td><td>${u.must_change ? "Pending setup" : "Active"}</td><td>${u.role !== "admin" ? `<button class="del-btn" onclick="deleteUser(${u.id})">Delete</button>` : ""}</td></tr>`).join("")
+      + "</tbody></table>";
+  } catch { wrap.innerHTML = "<p class='muted'>Could not load users.</p>"; }
+}
+
+function showCreateUser() {
+  document.getElementById("createUserForm").style.display = "block";
+  document.getElementById("createUserMsg").textContent = "";
+}
+
+async function createUser() {
+  const email = document.getElementById("newUserEmail").value.trim();
+  const pass  = document.getElementById("newUserPass").value.trim();
+  const msg   = document.getElementById("createUserMsg");
+  if (!email || !pass) { msg.textContent = "Email and password are required."; return; }
+  try {
+    const res  = await fetch("/api/admin/users", { method:"POST", headers: authHeaders(), body: JSON.stringify({email, temp_password: pass}) });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.detail || "Error creating user."; return; }
+    document.getElementById("newUserEmail").value = "";
+    document.getElementById("newUserPass").value  = "";
+    document.getElementById("createUserForm").style.display = "none";
+    renderAdmin();
+  } catch { msg.textContent = "Cannot reach server."; }
+}
+
+async function deleteUser(id) {
+  if (!confirm("Delete this user?")) return;
+  await fetch("/api/admin/users/" + id, { method:"DELETE", headers: authHeaders() });
+  renderAdmin();
+}
 </script>
 
+
+<main id="adminView" class="app-view"><div class="section-head"><div><h2>Admin Panel</h2><p>Manage users and view campaign activity.</p></div></div>
+<div style="display:flex;gap:10px;margin-bottom:20px">
+  <button onclick="showAdminTab('users')" id="adminTabUsers" style="padding:8px 22px;border-radius:8px;border:none;background:#1b4167;color:#e8f5ff;cursor:pointer;font-weight:600">Users</button>
+  <button onclick="showAdminTab('logs')" id="adminTabLogs" style="padding:8px 22px;border-radius:8px;border:none;background:#0d2137;color:#7ec8f7;cursor:pointer;font-weight:600">Campaign Logs</button>
+</div>
+<div id="adminPanelUsers">
+<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button type="button" onclick="showCreateUser()">+ Add User</button></div><div id="createUserForm" style="display:none;margin-bottom:24px;padding:20px;border:1px solid rgba(77,151,221,.24);border-radius:13px;background:rgba(7,28,56,.75);max-width:480px"><div style="color:#e4f4ff;font-size:15px;font-weight:700;margin-bottom:14px">New User</div><label class="auth-label">Email</label><input class="auth-field" id="newUserEmail" type="email" placeholder="user@company.com" style="width:100%;margin-bottom:12px"><label class="auth-label">Temporary password</label><input class="auth-field" id="newUserPass" type="text" placeholder="Temp password (share with user)" style="width:100%;margin-bottom:16px"><div style="display:flex;gap:10px"><button type="button" onclick="createUser()">Create</button><button type="button" onclick="document.getElementById('createUserForm').style.display='none'" style="background:rgba(7,28,56,.8);border:1px solid rgba(77,151,221,.3)">Cancel</button></div><div class="auth-note" id="createUserMsg"></div></div><div id="userTableWrap"></div>
+</div><!-- end adminPanelUsers -->
+<div id="adminPanelLogs" style="display:none">
+  <h3 style="color:#7ec8f7;margin-bottom:14px">Campaign Activity Logs</h3>
+  <div style="overflow-x:auto">
+    <table class="user-table" style="width:100%">
+      <thead><tr><th>#</th><th>User</th><th>Role</th><th>Type</th><th>Prompt</th><th>Images</th><th>Time</th></tr></thead>
+      <tbody id="logsBody"><tr><td colspan="7" style="text-align:center;color:#7ec8f7">Click Campaign Logs tab to load.</td></tr></tbody>
+    </table>
+  </div>
+</div></main>
 </body>
 </html>
