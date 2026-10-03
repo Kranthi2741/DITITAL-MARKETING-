@@ -1,0 +1,4 @@
+.env
+generated_images/
+__pycache__/
+*.pyc

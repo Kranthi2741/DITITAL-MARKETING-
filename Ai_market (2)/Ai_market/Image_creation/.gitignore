@@ -1,0 +1,52 @@
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Generated content (large files, user data)
+backend/generated_images/
+backend/generated_campaigns/
+backend/uploaded_images/
+backend/asset_library/
+backend/app_data/
+generated_images/
+generated_campaigns/
+uploaded_images/
+asset_library/
+
+# OAuth tokens (sensitive)
+backend/canva_tokens.json
+canva_tokens.json
+
+# Node.js
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Loose image/video files at root
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.mp4
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

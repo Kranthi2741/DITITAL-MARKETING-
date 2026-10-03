@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+langgraph
+langchain-core
+openai
+requests
+pillow
+python-dotenv
+websockets
+openpyxl
+python-multipart
+moviepy
