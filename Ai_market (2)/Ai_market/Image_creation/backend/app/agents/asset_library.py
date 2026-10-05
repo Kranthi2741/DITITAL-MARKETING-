@@ -61,6 +61,7 @@ def asset_library_node(state: CampaignState) -> CampaignState:
         "design_direction": state.get("design_direction", {}),
         "selected_concept": state.get("selected_concept", {}),
         "creative_brief": state.get("creative_brief", {}),
+        "rhyming_tagline": state.get("rhyming_tagline", ""),
         "image_prompt": state.get("image_prompt", ""),
         "quality_score": state.get("quality_score"),
         "quality_approved": state.get("quality_approved"),

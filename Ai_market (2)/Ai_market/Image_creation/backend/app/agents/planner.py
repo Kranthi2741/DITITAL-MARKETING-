@@ -9,7 +9,9 @@ def planner_node(state: CampaignState) -> CampaignState:
         "even if the user is sharing a personal story, achievement, or anecdote. "
         "NEVER say 'no campaign requested' or treat input as non-actionable. "
         "Personal stories = achievement posts. News = announcement posts. Events = event posts. "
-        "Always extract or CREATE: a strong headline, a main message, and a CTA. "
+        "Always extract or CREATE: a strong headline and a main message. "
+        "This application creates clean occasion and awareness artwork, not sales ads. "
+        "Never create an offer, discount, product promotion, purchase message, or call to action. "
         "For personal achievements like winning prizes, meeting VIPs, or sports wins: "
         "  - headline = the achievement (e.g. '1st Prize Winners!') "
         "  - main_message = the story in one punchy sentence "
@@ -42,9 +44,12 @@ def planner_node(state: CampaignState) -> CampaignState:
             "platform": "Instagram",
             "main_headline": prompt[:50],
             "main_message": prompt[:100],
-            "cta": "Share and celebrate with us!",
+            "cta": "",
             "offer": None,
         }
+    # Do not allow the planning model to add retail language to artwork.
+    plan["cta"] = ""
+    plan["offer"] = None
     return {
         "campaign_plan": plan,
         "costar_brief": result.get("costar", {}),

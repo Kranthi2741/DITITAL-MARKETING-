@@ -458,7 +458,9 @@ def build_log_message(node_name: str, node_state: dict) -> str:
     if node_name == "strategist":
         strat = node_state.get("marketing_strategy", {})
         direction = node_state.get("design_direction", {})
-        return f"Selected {direction.get('style', 'creative')} style with 3 concepts — audience: {strat.get('target_audience')}"
+        tagline = node_state.get("rhyming_tagline", "")
+        suffix = f' — rhyme: "{tagline}"' if tagline else ""
+        return f"Selected {direction.get('style', 'creative')} style with 3 concepts — audience: {strat.get('target_audience')}{suffix}"
     if node_name == "creative_director":
         brief = node_state.get("creative_brief", {})
         return f"Wrote creative brief — composition: {brief.get('composition', '')[:80]}"

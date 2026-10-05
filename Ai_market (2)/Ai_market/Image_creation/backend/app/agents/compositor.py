@@ -223,7 +223,7 @@ def _event_details(state: CampaignState) -> list[tuple[str, str]]:
     location = next((w for w in context.split()
                      if w.istitle() and len(w) > 3 and w not in skip), "")
 
-    cta_detail = _clean(costar.get("response", "") or strategy.get("content_type", "") or "Visit our booth", 35)
+    cta_detail = _clean(strategy.get("content_type", "") or "Celebrate together", 35)
 
     details = []
     if scheduled:
@@ -378,7 +378,7 @@ def _draw_hero_headline(draw: ImageDraw.ImageDraw, state: CampaignState,
             draw.text((PAD, y + i * line_h), line, font=font, fill=P["WHITE"] if i == 0 else P["ACCENT_BLUE"])
     y += len(lines) * line_h + 14
 
-    tagline_raw = direction.get("supporting_copy") or brief.get("composition") or ""
+    tagline_raw = state.get("rhyming_tagline") or direction.get("supporting_copy") or brief.get("composition") or ""
     tagline     = _clean(tagline_raw, 80)
     if tagline:
         draw.text((PAD, y), _fit(draw, tagline, fonts["sub"], SIZE - PAD * 2), font=fonts["sub"], fill=P["OFF_WHITE"])
@@ -551,7 +551,6 @@ def compositor_node(state: CampaignState) -> CampaignState:
     if ctype == "event":
         y = _draw_audience_section(draw, state, SIZE, PAD, fonts, y, P)
 
-    y = _draw_cta(draw, state, SIZE, PAD, fonts, y, P)
     _draw_hashtag_footer(draw, state, SIZE, PAD, fonts, max(y, SIZE - 156), P)
 
     result   = Image.alpha_composite(base, overlay).convert("RGB").convert("RGBA")

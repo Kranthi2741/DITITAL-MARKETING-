@@ -441,6 +441,59 @@
   .modal-comments h4 { color:#86a9cc; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px; }
   .modal-comment-item { padding:8px 10px; margin-bottom:6px; border-radius:8px; background:rgba(7,28,56,.7); border:1px solid rgba(77,151,221,.15); font-size:12px; color:#b9d4ee; }
   .modal-comment-item span { color:#73caff; font-weight:600; }
+
+  /* ── Neon command-center redesign ─────────────────────────────────────── */
+  :root { --neo-bg:#04021a; --neo-panel:rgba(10,8,42,.82); --neo-line:rgba(125,81,255,.43); --neo-cyan:#28c9ff; --neo-violet:#7e38ff; --neo-pink:#ef4ce1; --neo-text:#f4f1ff; --neo-muted:#a9a4cc; }
+  body { padding-left:230px; padding-right:0; background:radial-gradient(circle at 48% 18%,rgba(58,35,178,.34),transparent 27%),radial-gradient(circle at 85% 68%,rgba(0,166,255,.13),transparent 27%),linear-gradient(135deg,#040116,#080428 55%,#030219); color:var(--neo-text); }
+  .app-sidebar { width:230px; padding:27px 15px; background:linear-gradient(180deg,rgba(4,2,24,.98),rgba(8,4,39,.98)); border-right:1px solid var(--neo-line); box-shadow:12px 0 42px rgba(0,0,0,.25); }
+  .brand { margin:0 10px 40px; font-size:18px; letter-spacing:.3px; }.brand-mark { color:#c75cff; text-shadow:0 0 18px #8239ff; }.brand small { color:#827dac; }
+  .nav-item { margin:5px 0; padding:13px 14px; color:#cbc7e8; border:1px solid transparent; }.nav-item.active,.nav-item:hover { background:linear-gradient(100deg,rgba(91,37,221,.85),rgba(35,58,220,.7)); border-color:rgba(174,91,255,.4); box-shadow:0 0 22px rgba(126,56,255,.35); }.sidebar-user { color:#e0dcf8; }.sidebar-user small{color:#8f89b8}.logout-btn{border-color:rgba(157,112,255,.42);color:#cbc5f2}.logout-btn:hover{background:rgba(111,52,239,.2)}
+  .dashboard-aside { position:static; display:block!important; width:auto; padding:0; overflow:visible; background:none; border:0; }
+  .app-view { max-width:1600px; padding:28px 32px 44px; }.section-head h2 { color:var(--neo-text); }.section-head p,.data-card p,.muted { color:var(--neo-muted); }
+  #dashboardView.active { display:grid!important; grid-template-columns:minmax(0,1fr) 315px; column-gap:20px; align-items:start; }.dashboard-aside { grid-column:2; grid-row:1 / span 20; margin-top:77px; }.dashboard-aside .dash-card { background:linear-gradient(145deg,rgba(18,9,59,.89),rgba(7,5,38,.94)); border-color:var(--neo-line); border-radius:13px; box-shadow:0 0 26px rgba(70,34,184,.14),inset 0 1px rgba(255,255,255,.05); }.dash-card h3{color:#f3efff}.brief-box{background:rgba(4,4,31,.75);border-color:rgba(72,205,255,.32);color:#c9c4e9}.check{color:#c1bcdf;border-color:rgba(156,119,255,.18)}.activity{color:#bdb7dc}.activity i{background:var(--neo-pink);box-shadow:0 0 9px var(--neo-pink)}
+  #dashboardView header { grid-column:1; width:100%; max-width:none; margin:0; padding:0 0 15px; display:flex; align-items:end; justify-content:space-between; }.app-view header h1{font-size:24px;background:none;-webkit-text-fill-color:var(--neo-text);color:var(--neo-text);letter-spacing:.2px}.app-view p.sub{color:#9c96c4}.app-view header::after{content:'AI marketing intelligence';font-size:12px;color:#b9b1e8;padding:9px 13px;border:1px solid rgba(128,84,255,.5);border-radius:8px;background:rgba(92,47,211,.14)}
+  #dashboardView > .row-label,#dashboardView > .input-row,#dashboardView > .stat-strip,#dashboardView > #scheduleStatus,#dashboardView > #graph-container,#dashboardView > #result{grid-column:1;max-width:none;width:100%}.row-label{color:#9b90df;margin:14px 0 7px}.input-row{margin:0 0 10px;padding:8px;background:rgba(12,8,50,.86);border-color:rgba(94,73,227,.5);box-shadow:0 0 25px rgba(41,154,255,.1)}input[type=text]{background:rgba(5,3,30,.85);border-color:rgba(120,89,255,.16);color:#f2efff}.input-row button,button{background:linear-gradient(135deg,#216ff4,#9139ec);box-shadow:0 4px 20px rgba(74,78,255,.36)}.photo-row{margin-bottom:13px}.stat-strip{gap:13px;margin:16px 0}.stat{padding:15px;background:linear-gradient(145deg,rgba(16,9,58,.9),rgba(7,5,40,.82));border-color:var(--neo-line);box-shadow:inset 0 1px rgba(255,255,255,.06),0 0 20px rgba(66,35,180,.1);color:#aaa3d1}.stat strong{color:#f7f4ff;font-size:23px}.stat:nth-child(2) strong{color:#c677ff}.stat:nth-child(3) strong{color:#31d7ff}.stat:nth-child(4) strong{color:#60f0ad}
+  #graph-container{height:min(570px,57vh);min-height:470px;border:1px solid var(--neo-line);border-radius:15px;background-color:rgba(7,5,37,.68);background-image:linear-gradient(rgba(104,86,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(104,86,255,.07) 1px,transparent 1px);box-shadow:0 0 36px rgba(79,45,220,.14)}.node{background:linear-gradient(145deg,rgba(28,17,83,.96),rgba(6,5,37,.98));border-color:rgba(110,82,250,.86)}.node.active{border-color:#45d7ff;box-shadow:0 0 27px 6px rgba(45,194,255,.42)}.node.done{border-color:#a858ff;box-shadow:0 0 18px 3px rgba(174,74,255,.3)}.node .name{color:#f1efff}.node .name small{color:#aaa4d2}.edge{stroke:#6754b7}.edge.active{stroke:#38ccff}.edge.loop{stroke:#e75ddd}#orchestrator{border-color:#8f52ff;background:radial-gradient(circle,rgba(153,64,255,.42),rgba(15,8,65,.76) 58%,transparent 60%);box-shadow:0 0 28px rgba(128,53,255,.65),inset 0 0 22px rgba(89,169,255,.3)}#orchestrator strong{color:#fff4ff}#orchestrator span{color:#bda7ff}
+  .data-card,.campaign-card,.campaign-row,.settings-form,.calendar-wrap { background:linear-gradient(145deg,rgba(16,9,58,.88),rgba(6,5,38,.92));border-color:var(--neo-line);box-shadow:0 0 22px rgba(66,35,180,.1) }.data-card h3,.campaign-card h3,.campaign-row h3{color:#f4f1ff}.tag{background:rgba(58,214,161,.13);color:#77f1bf}.calendar-title{color:#f4efff;border-color:rgba(134,95,255,.22)}.calendar-day{border-color:rgba(134,95,255,.18)}.stat-pill{background:rgba(9,6,43,.72);border-color:rgba(130,91,255,.3)}.stat-pill .sp-value{color:#fff}.analytics-modal-box{background:linear-gradient(145deg,#120943,#050326);border-color:var(--neo-line)}
+  #result{background:linear-gradient(145deg,rgba(17,10,61,.88),rgba(5,4,36,.94));border-color:var(--neo-line)}
+  @media(max-width:1050px){body{padding-left:0}.app-sidebar{transform:translateX(-100%);transition:transform .25s ease}.app-sidebar.open{transform:translateX(0)}.hamburger{display:flex}.dashboard-aside{display:none!important}#dashboardView.active{display:block!important}.app-view{padding:28px 20px}.mob-overlay{display:block}}
+
+  /* ── Light analytics dashboard ───────────────────────────────────────── */
+  :root{--ink:#1d2638;--slate:#657087;--page:#f7f8fc;--line:#e7e9f0;--brand:#635bdf;--brand-2:#8078f5;--green:#22c55e;--amber:#f59e0b;--red:#ef4444}
+  body{padding-left:256px;padding-right:0;background:var(--page);color:var(--ink)} .app-sidebar{width:256px;background:#fff;border-right:1px solid var(--line);box-shadow:none}.brand{color:var(--ink);margin-bottom:26px}.brand small{color:#9299a9}.brand-mark{color:var(--brand);text-shadow:none}.nav-item{color:#59657a;border-radius:0;margin:2px -15px;padding:12px 22px}.nav-item.active,.nav-item:hover{color:var(--brand);background:#f4f2ff;border-left:3px solid var(--brand);border-color:transparent transparent transparent var(--brand);box-shadow:none}.sidebar-user{color:#465168}.sidebar-user small{color:#9aa2b1}.logout-btn{color:#6d7687;border-color:#e1e4ec}.logout-btn:hover{color:var(--brand);background:#f5f3ff}.dashboard-aside{display:none!important}
+  .app-view{max-width:1700px;padding:30px}.app-view:not(#dashboardView){background:var(--page);min-height:100vh}.section-head h2,.data-card h3,.campaign-card h3,.campaign-row h3{color:var(--ink)}.section-head p,.data-card p,.muted{color:var(--slate)}.data-card,.campaign-card,.campaign-row,.settings-form,.calendar-wrap{background:#fff;border-color:var(--line);box-shadow:0 2px 4px rgba(28,39,67,.03)}
+  #dashboardView.active{display:block!important}.dash-topbar{width:100%;max-width:none;margin:0;padding:0 0 20px;border-bottom:1px solid var(--line);align-items:center}.app-view header h1{color:var(--ink);-webkit-text-fill-color:var(--ink);font-size:25px}.app-view p.sub{color:#8a93a4;margin-top:5px}.app-view header::after{display:none}.dash-actions{display:flex;gap:10px;align-items:center}.dash-actions button,.range-button{padding:11px 16px;border-radius:8px;font-size:13px}.range-button{background:#fff!important;color:#6259cd!important;border:1px solid #a9a4ed!important;box-shadow:none!important}.quick-create{padding:15px 0 4px}.row-label{color:#7a728d;margin:0 0 7px}.input-row{max-width:none;margin:0;padding:7px;background:#fff;border-color:#e2e4ec;box-shadow:none}.input-row input[type=text]{background:#fff;color:var(--ink);border-color:transparent;box-shadow:none}.input-row button,button{background:var(--brand);box-shadow:none}.input-row button:hover:not(:disabled),button:hover:not(:disabled){background:#5148ce}.photo-create{margin-top:9px;color:#6e7789;font-size:12px}.photo-create summary{cursor:pointer;width:max-content}.photo-row{max-width:none;margin:10px 0}.dash-status{text-align:left;margin:4px 0 10px}.dashboard-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:18px 0 22px}.kpi-card{display:flex;align-items:center;gap:12px;padding:21px;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 2px 7px rgba(28,39,67,.03)}.kpi-card .kpi-icon{width:42px;height:42px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:21px}.kpi-card strong{display:block;font-size:25px;color:var(--ink);line-height:1}.kpi-card small{display:block;color:#7b8598;margin-top:7px;font-size:12px}.kpi-card em{margin-left:auto;color:#25a85a;font-size:11px;font-style:normal}.kpi-card.purple .kpi-icon{background:#6960e7}.kpi-card.green .kpi-icon{background:#20bf68}.kpi-card.amber .kpi-icon{background:#f4a313}.kpi-card.red .kpi-icon{background:#ef4a4a}.dashboard-grid{display:grid;gap:18px;margin-top:18px}.main-charts{grid-template-columns:minmax(0,1.8fr) minmax(300px,.85fr)}.secondary-charts{grid-template-columns:1fr 1fr}.lower-grid{grid-template-columns:minmax(0,1.8fr) minmax(300px,.85fr);align-items:start}.white-panel{background:#fff;border:1px solid var(--line);border-radius:11px;padding:21px;box-shadow:0 2px 7px rgba(28,39,67,.03)}.panel-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}.panel-title h2{font-size:16px;color:var(--ink)}.panel-title span{font-size:12px;color:#929aaa}.text-button{color:var(--brand);background:none!important;padding:0!important;font-size:12px}.trend-panel svg{width:100%;height:auto;display:block}.donut-wrap{display:flex;align-items:center;justify-content:center;gap:22px;min-height:245px}.donut{width:170px;height:170px;border-radius:50%;background:conic-gradient(#e83d62 0 40%,#229ae6 40% 68%,#161d2b 68% 84%,#7b70ef 84% 100%);position:relative;display:grid;place-content:center;text-align:center}.donut::after{content:"";position:absolute;inset:42px;background:#fff;border-radius:50%}.donut b,.donut small{position:relative;z-index:1;color:var(--ink)}.donut b{font-size:26px}.donut small{font-size:11px;color:#81899b}.donut-legend{display:grid;gap:9px;font-size:12px;color:#616b7e}.donut-legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;background:var(--dot)}.quality-bars,.hashtag-bars{height:245px;display:flex;align-items:end;justify-content:space-around;gap:14px;padding:15px 4px 0;border-bottom:1px solid #eef0f4;background:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,#eef0f4 48px)}.quality-bar,.hashtag-bar{height:100%;flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:7px;color:#70798b;font-size:10px;min-width:0}.quality-bar i,.hashtag-bar i{display:block;width:100%;max-width:48px;background:#746cf0;border-radius:4px 4px 0 0}.quality-bar i{background:#2ecb7c}.quality-bar b,.hashtag-bar b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.table-wrap{overflow-x:auto}.top-posts table{border-collapse:collapse;width:100%;font-size:12px}.top-posts th{text-align:left;color:#8c95a5;padding:0 8px 11px;border-bottom:1px solid var(--line)}.top-posts td{padding:13px 8px;border-bottom:1px solid #f0f1f5;color:#576276}.post-title{color:#313a4b;font-weight:600}.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:#2ac36a;margin-right:5px}.dashboard-stack{display:grid;gap:18px}.mini-panel{padding:19px}.mini-list{display:grid;gap:13px}.mini-event{border-left:3px solid #756cef;padding:2px 0 2px 10px}.mini-event b{display:block;font-size:12px;color:#455065}.mini-event span{display:block;font-size:11px;color:#98a0af;margin-top:3px}.suggestion{padding:10px 0;border-bottom:1px solid #eff0f4}.suggestion:last-child{border:0}.suggestion b{display:block;font-size:12px;color:#3f4a5e}.suggestion span{display:block;color:#8b94a5;font-size:11px;margin-top:5px;line-height:1.45}.workflow-section{background:#fff;border:1px solid var(--line);border-radius:11px;padding:21px;margin-top:18px}.workflow-section #graph-container{height:510px;min-height:420px;border-color:#eceef4;background-color:#fafbfe;background-image:linear-gradient(rgba(113,104,238,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(113,104,238,.07) 1px,transparent 1px);box-shadow:none}.workflow-section .node{background:#fff;border-color:#bcb8f7;box-shadow:0 2px 8px rgba(83,74,189,.08)}.workflow-section .node .name{color:#364054}.workflow-section .node .name small{color:#7c8799}.workflow-section .node .icon-circle{background:#f1f0ff}.workflow-section #orchestrator{background:radial-gradient(circle,rgba(126,110,245,.28),rgba(250,250,255,.88) 58%,transparent 60%);border-color:#998fff;box-shadow:0 0 22px rgba(110,98,245,.24)}.workflow-section #orchestrator strong{color:#3e3a74}.workflow-section #orchestrator span{color:#746bb5}.workflow-section .edge{stroke:#aaa6cf}.workflow-section .edge.active{stroke:#358fed}.workflow-section .edge.loop{stroke:#ce65d9}#result{max-width:none;margin:18px 0 0;background:#fff;border-color:var(--line);box-shadow:0 2px 7px rgba(28,39,67,.03)}#result img{border-color:#e1e4ef;box-shadow:none}#result video{display:none;width:min(100%,520px);border-radius:10px;border:1px solid #e1e4ef}
+  @media(max-width:1100px){body{padding-left:0}.app-sidebar{transform:translateX(-100%)}.app-sidebar.open{transform:translateX(0)}.hamburger{display:flex}.main-charts,.lower-grid{grid-template-columns:1fr}.dashboard-stack{grid-template-columns:1fr 1fr}}@media(max-width:720px){.app-view{padding:20px 14px}.dash-topbar{align-items:flex-start;gap:14px}.dash-actions{flex-wrap:wrap}.dashboard-kpis,.secondary-charts,.dashboard-stack{grid-template-columns:1fr 1fr}.kpi-card{padding:14px;gap:9px}.kpi-card .kpi-icon{width:34px;height:34px}.kpi-card strong{font-size:19px}.kpi-card em{display:none}.input-row{flex-wrap:wrap}.schedule-row input[type=text]{min-width:100%}.donut-wrap{flex-direction:column}.workflow-section #graph-container{height:700px}.photo-row{display:flex}}
+
+  /* ── AI Command Center ───────────────────────────────────────────────── */
+  body{padding-left:222px;background:radial-gradient(circle at 53% 35%,rgba(39,71,152,.21),transparent 28%),#030d1d;color:#e9f3ff}.app-sidebar{width:222px;background:linear-gradient(180deg,#061328,#041021);border-color:rgba(91,136,211,.2)}.brand{color:#f4f7ff}.brand-mark{color:#8658ff;text-shadow:0 0 14px #6c35ff}.brand small{color:#7890b6}.nav-item{color:#b5c6e4;margin:3px -15px;border-radius:8px}.nav-item.active,.nav-item:hover{color:#fff;background:linear-gradient(100deg,#5931da,#362099);border:1px solid rgba(153,91,255,.5);box-shadow:0 0 20px rgba(104,52,237,.35)}.sidebar-user{color:#e3edff}.sidebar-user small{color:#7894ba}.logout-btn{border-color:rgba(114,151,218,.3);color:#bfd3ef}.dashboard-aside{display:none!important}.app-view{max-width:1800px;padding:10px 20px 20px;background:transparent!important}.app-view:not(#dashboardView){min-height:100vh;background:#030d1d!important}.app-view .section-head h2,.data-card h3,.campaign-card h3,.campaign-row h3{color:#e9f3ff}.data-card,.campaign-card,.campaign-row,.settings-form,.calendar-wrap{background:rgba(7,21,45,.8);border-color:rgba(73,122,197,.25);box-shadow:none}
+  #dashboardView.active{display:block!important}.command-topbar{height:44px;width:100%;max-width:none;margin:0 0 10px;padding:0;display:flex;align-items:center;justify-content:space-between}.command-search{width:min(465px,65%);padding:10px 14px;border:1px solid rgba(89,132,205,.38);background:rgba(12,29,59,.75);border-radius:8px;color:#a9c2e7;font-size:13px}.command-search:first-letter{font-size:20px}.command-top-actions{display:flex;align-items:center;gap:21px;color:#b8cbea;font-size:13px}.command-avatar{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4f9eff,#7752e8);color:#fff;font-weight:700}.campaign-strip{display:grid;grid-template-columns:100px minmax(250px,1fr) minmax(330px,.8fr);gap:16px;align-items:center;padding:12px 16px;margin-bottom:12px;border:1px solid rgba(70,142,235,.45);border-radius:12px;background:linear-gradient(100deg,rgba(8,32,71,.92),rgba(16,20,74,.84));box-shadow:inset 0 1px rgba(255,255,255,.06)}.campaign-icon{width:82px;height:72px;border-radius:8px;background:linear-gradient(135deg,#225fca,#7b37ed);display:grid;place-items:center;font-size:33px;box-shadow:0 0 22px rgba(57,119,255,.35)}.campaign-strip-copy b{font-size:17px}.campaign-strip-copy p{font-size:12px;color:#b3caec;margin:7px 0}.command-status{margin-left:10px;padding:4px 10px;border-radius:99px;background:rgba(23,193,128,.18);color:#6af0ae;font-size:11px}.platform-pills{display:flex;gap:8px}.platform-pills span{padding:5px 9px;border-radius:7px;background:rgba(7,17,44,.76);border:1px solid rgba(68,133,218,.35);font-size:11px;color:#d7e5ff}.command-composer{display:flex;gap:7px}.command-composer input{width:100%;padding:11px;border-radius:7px;border:1px solid rgba(96,139,213,.4);background:#071a35;color:#eef6ff}.command-composer button,.command-buttons button,.tool-content button{padding:10px 13px;border-radius:7px;background:linear-gradient(135deg,#285cde,#833ee5);white-space:nowrap;box-shadow:none}.command-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:13px}.command-workspace{min-width:0}.command-heading{display:flex;justify-content:space-between;align-items:center;margin:9px 0}.command-heading h1{margin:0;color:#d4cdff;font-size:29px;letter-spacing:.1px}.command-heading p{color:#a7c4ec;margin-top:5px;font-size:14px}.command-buttons{display:flex;gap:8px}.command-buttons .command-pause{background:rgba(17,42,76,.8);border:1px solid rgba(93,137,203,.4);color:#b9d4f6}.command-buttons #cancelBtn{background:rgba(136,24,57,.55);border:1px solid rgba(255,74,120,.55)}.command-message{font-size:12px;color:#86a8d8;min-height:15px}.command-workspace #graph-container{height:625px;min-height:520px;border:1px solid rgba(45,133,230,.28);border-radius:12px;background-color:rgba(3,14,35,.8);background-image:linear-gradient(rgba(70,138,230,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(70,138,230,.06) 1px,transparent 1px);box-shadow:inset 0 0 60px rgba(7,37,90,.22)}.command-workspace .node{width:228px;height:116px;background:linear-gradient(145deg,rgba(12,36,77,.98),rgba(5,17,41,.98));border-color:#247ed6;border-radius:14px}.command-workspace .node .name{color:#f0f6ff}.command-workspace .node .name small{color:#9fc0ed}.command-workspace .node.active{border-color:#2fe0ff;box-shadow:0 0 26px 5px rgba(33,207,255,.42)}.command-workspace .node.done{border-color:#31d69a;box-shadow:0 0 20px rgba(39,214,157,.28)}.command-workspace .node .icon-circle{width:49px;height:49px;background:linear-gradient(135deg,rgba(65,139,255,.3),rgba(142,55,255,.33));font-size:23px}.command-workspace #orchestrator{width:205px;height:205px;border-color:#7865ff;background:radial-gradient(circle,rgba(52,142,255,.45),rgba(51,14,123,.66) 55%,transparent 61%);box-shadow:0 0 35px rgba(51,126,255,.75),inset 0 0 31px rgba(139,73,255,.7)}.command-workspace #orchestrator strong{font-size:16px;color:#fff}.command-workspace #orchestrator span{color:#bccdff}.command-workspace .edge{stroke:#3386db}.command-workspace .edge.active{stroke:#29d9ff}.command-workspace .edge.loop{stroke:#c152f6}.command-tools{padding:9px 0;color:#9db7df;font-size:12px}.command-tools summary{cursor:pointer;width:max-content}.tool-content{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:10px 0}.tool-content input[type=text]{padding:9px;border-radius:6px;border:1px solid rgba(94,140,213,.4);background:#071a35;color:#fff}.command-activity{padding:0;border:1px solid rgba(48,115,203,.36);border-radius:12px;background:rgba(5,18,41,.88);overflow:hidden}.live-banner{display:flex;justify-content:space-between;align-items:center;padding:19px 17px;background:linear-gradient(110deg,rgba(130,19,45,.9),rgba(44,13,38,.9));border-bottom:1px solid rgba(244,60,88,.5)}.live-banner b{font-size:20px;color:#ffabb3}.live-banner b i{display:inline-block;width:14px;height:14px;background:#ff3b50;border-radius:50%;box-shadow:0 0 14px #ff3249;margin-right:9px}.live-banner span{font-size:11px;color:#ffc4ca}.activity-header{display:flex;align-items:center;justify-content:space-between;padding:18px 17px 12px}.activity-header h2{font-size:17px}.activity-header button{background:none;color:#a8c9fc;padding:0;font-size:11px;box-shadow:none}.activity-stream{padding:0 15px 15px;display:grid;gap:2px;max-height:575px;overflow:auto}.stream-item{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid rgba(89,132,197,.17);font-size:12px}.stream-item>i{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#27bc82,#3679ea);box-shadow:0 0 10px rgba(50,148,255,.35)}.stream-item b{display:block;color:#edf5ff;font-size:12px}.stream-item span{display:block;color:#9db5d8;margin-top:5px;font-size:11px;line-height:1.35}.execution-timeline{display:flex;align-items:center;gap:23px;margin-top:13px;padding:15px 18px;border:1px solid rgba(57,117,205,.35);border-radius:10px;background:rgba(6,22,47,.87)}.execution-timeline>b{font-size:13px}.timeline-steps{display:flex;align-items:center;justify-content:space-around;flex:1;gap:6px}.timeline-steps span{position:relative;display:grid;place-items:center;width:25px;height:25px;border-radius:50%;border:1px solid #5473aa;color:#b4c7e4;font-size:11px}.timeline-steps span:not(:last-child)::after{content:"";position:absolute;left:25px;width:72px;height:2px;background:#34527e}.timeline-steps span.active{background:#50e890;color:#062a1b;border-color:#50e890;box-shadow:0 0 13px #32e881}.timeline-steps small{position:absolute;top:29px;white-space:nowrap;color:#b3c5e2;font-size:10px}.execution-timeline>strong{font-size:12px;color:#c8d9f7}#result{background:rgba(7,21,45,.88);border-color:rgba(66,121,199,.35);box-shadow:none;color:#d8e8ff}#result img{border-color:#2566ae}#result video{border-color:#2566ae}
+  @media(max-width:1150px){body{padding-left:0}.app-sidebar{transform:translateX(-100%)}.app-sidebar.open{transform:translateX(0)}.hamburger{display:flex}.command-grid{grid-template-columns:1fr}.command-activity{display:none}.campaign-strip{grid-template-columns:78px 1fr}.command-composer{grid-column:1 / -1}.command-workspace #graph-container{height:620px}}@media(max-width:720px){.app-view{padding:8px}.campaign-strip{grid-template-columns:1fr}.campaign-icon{display:none}.command-topbar{height:auto}.command-search{width:75%}.command-heading{align-items:flex-start;gap:10px;flex-direction:column}.command-heading h1{font-size:23px}.command-workspace #graph-container{height:760px}.execution-timeline{overflow:auto}.timeline-steps{min-width:500px}.command-workspace .node{width:180px;height:88px}.command-workspace #orchestrator{transform:translate(-50%,-50%) scale(.75)}}
+  /* Visible upload controls in the command center */
+  .command-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;margin-bottom:10px;border:1px solid rgba(57,119,210,.33);border-radius:9px;background:rgba(4,19,44,.78);color:#b8cbea;font-size:11px}.command-tools .tool-label{font-weight:700;color:#e4edff;margin-right:3px}.command-tools label{display:flex;align-items:center;gap:5px;padding:6px 8px;border:1px solid rgba(84,134,207,.32);border-radius:6px;background:rgba(12,34,70,.65)}.command-tools input[type=file]{max-width:150px;color:#a9c4e8;font-size:10px}.command-tools input[type=text]{flex:1;min-width:180px;padding:8px;border-radius:6px;border:1px solid rgba(94,140,213,.4);background:#071a35;color:#fff}.command-tools button{padding:8px 10px;font-size:11px}
+
+  /* Final dashboard theme: keep the workspace in the requested white analytics style. */
+  body{padding-left:256px;background:#f7f8fc;color:#1d2638}
+  .app-sidebar{width:256px;background:#fff;border-right:1px solid #e7e9f0;box-shadow:none}
+  .brand{color:#1d2638;margin-bottom:26px}.brand-mark{color:#635bdf;text-shadow:none}.brand small{color:#9299a9}
+  .nav-item{color:#59657a;border-radius:0;margin:2px -15px;padding:12px 22px}.nav-item.active,.nav-item:hover{color:#635bdf;background:#f4f2ff;border:0;border-left:3px solid #635bdf;box-shadow:none}
+  .sidebar-user{color:#465168}.sidebar-user small{color:#9aa2b1}.logout-btn{color:#6d7687;border-color:#e1e4ec}
+  .app-view{max-width:1700px;padding:30px;background:#f7f8fc!important}.app-view:not(#dashboardView){min-height:100vh;background:#f7f8fc!important}
+  #dashboardView.active{display:block!important}.dashboard-aside{display:none!important}
+  .dash-topbar{width:100%;max-width:none;margin:0;padding:0 0 20px;border-bottom:1px solid #e7e9f0;align-items:center}.app-view header h1{color:#1d2638;-webkit-text-fill-color:#1d2638}.app-view p.sub{color:#8a93a4}.app-view header::after{display:none}
+  .input-row{background:#fff;border-color:#e2e4ec;box-shadow:none}.input-row input[type=text]{background:#fff;color:#1d2638}.input-row button,button{background:#635bdf;box-shadow:none}
+  .data-card,.campaign-card,.campaign-row,.settings-form,.calendar-wrap,#result{background:#fff;border-color:#e7e9f0;box-shadow:0 2px 7px rgba(28,39,67,.03)}
+  .workflow-section #graph-container{border-color:#eceef4;background-color:#fafbfe;box-shadow:none}.workflow-section .node{background:#fff;border-color:#bcb8f7}.workflow-section .node .name{color:#364054}.workflow-section #orchestrator{border-color:#998fff}.workflow-section .edge{stroke:#aaa6cf}
+  /* High-contrast light theme for every workspace page, not only Dashboard. */
+  .app-view .section-head h2,.app-view .data-card h3,.app-view .campaign-card h3,.app-view .campaign-row h3,.app-view .calendar-title{color:#1d2638!important}
+  .app-view .section-head p,.app-view .data-card p,.app-view .campaign-row small,.app-view .comment,.app-view .muted,.app-view .calendar-weekday,.app-view .calendar-day,.app-view .calendar-legend{color:#526178!important}
+  .campaign-row:hover{background:#f4f2ff!important;border-color:#bdb8f7!important}.tag{background:#e7f8ef!important;color:#167a47!important;border:1px solid #bcebd2!important}
+  .settings-form label,.settings-form .toggle-row,.settings-form select,.settings-form input,.calendar-controls input{color:#334155!important;background:#fff!important;border-color:#d9deea!important}
+  .calendar-title{border-color:#e7e9f0!important}.calendar-day{border-color:#e9ecf2!important}.calendar-event.created{color:#166534!important;background:#dcfce7!important}.calendar-event.queued{color:#1d4ed8!important;background:#dbeafe!important}.calendar-event.failed{color:#b42318!important;background:#fee4e2!important}
+  .analytics-modal-box,.stat-pill,.modal-caption,.modal-comment-item{background:#fff!important;border-color:#e1e6ef!important;color:#344054!important}.stat-pill .sp-value{color:#1d2638!important}.platform-label,.modal-comments h4{color:#526178!important}
+  .app-view [style*="color:#e4f4ff"],.app-view [style*="color:#e9f5ff"],.app-view [style*="color:#e8f5ff"]{color:#1d2638!important}.app-view [style*="color:#b9d7ef"],.app-view [style*="color:#86a9cc"],.app-view [style*="color:#6a8fb0"],.app-view [style*="color:#7ec8f7"]{color:#526178!important}
+  .range-menu{position:relative}.range-options{position:absolute;right:0;top:calc(100% + 7px);z-index:20;min-width:145px;padding:5px;background:#fff;border:1px solid #dfe3ec;border-radius:9px;box-shadow:0 10px 24px rgba(31,41,55,.14)}.range-options button{display:block;width:100%;padding:9px 10px;background:transparent!important;color:#3d4960!important;text-align:left;font-size:12px}.range-options button:hover{background:#f4f2ff!important;color:#5148ce!important}
+  @media(max-width:1100px){body{padding-left:0}.app-sidebar{transform:translateX(-100%)}.app-sidebar.open{transform:translateX(0)}.hamburger{display:flex}.dashboard-aside{display:none!important}.app-view{padding:20px 14px}}
 </style>
 </head>
 <body>
@@ -504,7 +557,6 @@
 </aside>
 
 <aside class="dashboard-aside">
-  <div class="dash-card"><h3>✦ Campaign Brief</h3><div id="dashboardBrief" class="brief-box">Upload a schedule or describe a campaign to begin.</div><button onclick="runCampaign()" style="width:100%;margin-top:12px">✦ Generate Campaign</button></div>
   <div class="dash-card"><h3>☑ Campaign Checklist</h3>
     <div class="check" id="check-planner">○ Plan &amp; Research</div>
     <div class="check" id="check-strategist">○ Strategy &amp; Channels</div>
@@ -523,50 +575,15 @@
 
 
 <main id="dashboardView" class="app-view active">
-<header>
-  <h1>Auto Marketing Agent</h1>
-  <p class="sub">Plan. Create. Automate. Grow with AI Agents.</p>
-</header>
-
-<p class="row-label" id="scheduleRowLabel"><i class="icon-sparkles"></i> Campaign Generator</p>
-<div class="input-row schedule-row" id="scheduleRow">
-  <span id="scheduleUpload"><input type="file" id="scheduleFile" accept=".xlsx,.xlsm" />
-  <button id="uploadBtn" onclick="uploadSchedule()">Upload Schedule</button></span>
-  <input type="text" id="campaignPrompt" placeholder="Or enter a campaign prompt" />
-  <button id="runBtn" type="button" onclick="runCampaign()">Generate</button>
-</div>
-
-<p class="row-label"><i class="icon-image-plus"></i> Photo Post — upload a photo and describe it</p>
-<div class="input-row photo-row">
-  <input type="file" id="imageFiles" accept="image/jpeg,image/png,image/webp" multiple />
-  <input type="text" id="photoPrompt" placeholder="Describe this photo, e.g. Write a post for our beach-cleanup visit" />
-  <div class="photo-actions">
-    <button id="photoSubmitBtn" type="button" onclick="submitPhotoPost()">Submit Post</button>
-    <button id="cancelBtn" class="danger-btn" type="button" onclick="cancelCampaign()" disabled>Cancel</button>
-  </div>
-</div>
-<div class="stat-strip">
-  <div class="stat">Total Campaigns<strong id="statTotal">0</strong></div>
-  <div class="stat">Assets Generated<strong id="statAssets">0</strong></div>
-  <div class="stat">Quality Score<strong id="statQuality">—</strong></div>
-  <div class="stat">Completed<strong id="statCompleted">0</strong></div>
-</div>
-<div id="scheduleStatus" class="sub" style="text-align:center;margin-bottom:12px"></div>
-
-<div id="graph-container">
-  <svg id="lines"></svg>
-  <div id="orchestrator" aria-hidden="true">
-    <div><div class="brain">🧠</div><strong>AI ORCHESTRATOR</strong><span>Plan · Create · Review</span></div>
-  </div>
-</div>
-
-<div id="result">
-  <div id="campaignDetails" style="margin-bottom:14px;color:#b9ddff;line-height:1.55"></div>
-  <img id="resultImage" src="" alt="Generated campaign image" />
-  <video id="resultVideo" controls style="display:none;width:min(100%,520px);border-radius:10px;border:1px solid #1f75c5"></video>
-  <div id="caption"></div>
-  <div id="hashtags"></div>
-</div>
+  <header class="dash-topbar"><div><h1>AI Social Media Manager</h1><p class="sub">Campaign performance, content creation, and publishing in one workspace.</p></div><div class="dash-actions"><div class="range-menu"><button id="rangeButton" type="button" class="range-button" onclick="toggleRangeMenu()" aria-expanded="false">▣ Last 7 Days⌄</button><div id="rangeOptions" class="range-options" hidden><button type="button" onclick="selectDashboardRange(7)">Last 7 Days</button><button type="button" onclick="selectDashboardRange(30)">Last 30 Days</button><button type="button" onclick="selectDashboardRange(90)">Last 90 Days</button></div></div><button id="runBtn" type="button" onclick="startNewPost()">＋ Create Post</button></div></header>
+  <section class="quick-create"><p class="row-label" id="scheduleRowLabel"><i class="icon-sparkles"></i> Create with MarketAI</p><div class="input-row schedule-row" id="scheduleRow"><span id="scheduleUpload"><input type="file" id="scheduleFile" accept=".xlsx,.xlsm" /><button id="uploadBtn" onclick="uploadSchedule()">Upload Schedule</button></span><input type="text" id="campaignPrompt" placeholder="Describe the campaign you want to create" /><button type="button" onclick="runCampaign()">Generate</button></div><div class="input-row photo-row"><input type="file" id="imageFiles" accept="image/jpeg,image/png,image/webp" multiple /><input type="text" id="photoPrompt" placeholder="Describe uploaded photos" /><div class="photo-actions"><button id="photoSubmitBtn" type="button" onclick="submitPhotoPost()">Create Photo Post</button><button id="cancelBtn" class="danger-btn" type="button" onclick="cancelCampaign()" disabled>Cancel</button></div></div></section>
+  <div id="scheduleStatus" class="sub dash-status"></div>
+  <section class="dashboard-kpis"><article class="kpi-card purple"><span class="kpi-icon">♥</span><div><strong id="dashEngagement">0</strong><small>Total Engagements</small></div><em id="dashEngagementDelta">—</em></article><article class="kpi-card green"><span class="kpi-icon">♟</span><div><strong id="dashPublished">0</strong><small>Published Posts</small></div><em>Live</em></article><article class="kpi-card amber"><span class="kpi-icon">◎</span><div><strong id="statQuality">—</strong><small>Average Quality</small></div><em>Quality</em></article><article class="kpi-card red"><span class="kpi-icon">✦</span><div><strong id="statAssets">0</strong><small>AI Posts Generated</small></div><em id="statCompleted">0 complete</em></article><span id="statTotal" hidden>0</span></section>
+  <section class="dashboard-grid main-charts"><article class="white-panel trend-panel"><div class="panel-title"><h2>Engagement Trends</h2><span id="dashTrendRange">Last 7 days</span></div><svg id="dashTrend" viewBox="0 0 760 270" role="img" aria-label="Engagement trend chart"></svg></article><article class="white-panel platform-panel"><div class="panel-title"><h2>Platform Distribution</h2><span id="dashPlatformRange">Last 7 days</span></div><div class="donut-wrap"><div id="dashDonut" class="donut"><b id="dashDonutCount">0</b><small>posts</small></div><div id="dashLegend" class="donut-legend"></div></div></article></section>
+  <section class="dashboard-grid secondary-charts"><article class="white-panel"><div class="panel-title"><h2>Campaign Quality</h2><span>Latest assets</span></div><div id="dashQualityBars" class="quality-bars"></div></article><article class="white-panel"><div class="panel-title"><h2>Hashtag Performance</h2><span>Most-used campaign tags</span></div><div id="dashHashtags" class="hashtag-bars"></div></article></section>
+  <section class="dashboard-grid lower-grid"><article class="white-panel top-posts"><div class="panel-title"><h2>Top Performing Posts</h2><button type="button" class="text-button" onclick="showView('campaigns')">View all</button></div><div class="table-wrap"><table><thead><tr><th>Campaign</th><th>Platform</th><th>Engagement</th><th>Quality</th><th>Status</th></tr></thead><tbody id="dashPosts"></tbody></table></div></article><aside class="dashboard-stack"><article class="white-panel mini-panel"><div class="panel-title"><h2>Content Calendar</h2><button type="button" class="text-button" onclick="showView('calendar')">View all</button></div><div id="dashCalendar" class="mini-list"></div></article><article class="white-panel mini-panel"><div class="panel-title"><h2>AI Suggestions</h2></div><div class="suggestion"><b>✦ Trending hashtags</b><span id="dashSuggestionTags">Generate campaigns to discover your best tags.</span></div><div class="suggestion"><b>◷ Best time to post</b><span>Use your published-post analytics to identify the best time.</span></div></article></aside></section>
+  <section class="workflow-section"><div class="panel-title"><h2>Marketing Automation Workflow</h2><span>Live agent progress</span></div><div id="graph-container"><svg id="lines"></svg><div id="orchestrator" aria-hidden="true"><div><div class="brain">🧠</div><strong>AI ORCHESTRATOR</strong><span>Plan · Create · Review</span></div></div></div></section>
+  <div id="result"><div id="campaignDetails"></div><img id="resultImage" src="" alt="Generated campaign image" /><video id="resultVideo" controls></video><div id="caption"></div><div id="hashtags"></div></div>
 </main>
 
 <main id="campaignsView" class="app-view"><div class="section-head"><div><h2>Campaigns</h2><p>Your saved campaign history and quality status.</p></div></div><div id="campaignList" class="campaign-list"></div></main>
@@ -697,6 +714,7 @@ function enterWorkspace(email, role) {
     const su = document.getElementById("scheduleUpload");
     if (su) su.style.display = role === "admin" ? "" : "none";
     kickoffDueCampaigns();
+    renderDashboard();
   } catch(e) { console.error("enterWorkspace error:", e); }
 }
 
@@ -763,6 +781,93 @@ function escapeHtml(value) {
 }
 async function getApi(path) { const response = await fetch(path); if (!response.ok) throw new Error("Unable to load data"); return response.json(); }
 function emptyState(message) { return `<div class="data-card"><h3>Nothing here yet</h3><p>${escapeHtml(message)}</p></div>`; }
+
+function metric(value) { return Number(value || 0).toLocaleString(); }
+
+function drawTrend(values) {
+  const svg = document.getElementById("dashTrend");
+  if (!svg) return;
+  const numbers = values.length ? values : [0, 0, 0, 0, 0, 0, 0];
+  const max = Math.max(1, ...numbers); const w = 760, h = 270, pad = {l:44,r:18,t:18,b:31};
+  const x = i => pad.l + i * ((w - pad.l - pad.r) / Math.max(1, numbers.length - 1));
+  const y = n => h - pad.b - (n / max) * (h - pad.t - pad.b);
+  const points = numbers.map((n,i) => `${x(i)},${y(n)}`).join(" ");
+  const area = `${pad.l},${h-pad.b} ${points} ${x(numbers.length-1)},${h-pad.b}`;
+  const grid = [0,.25,.5,.75,1].map(f => `<line x1="${pad.l}" x2="${w-pad.r}" y1="${y(max*f)}" y2="${y(max*f)}" stroke="#e9ebf1"/><text x="4" y="${y(max*f)+4}" fill="#929aaa" font-size="10">${Math.round(max*f)}</text>`).join("");
+  const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].slice(0,numbers.length).map((day,i) => `<text x="${x(i)}" y="${h-8}" text-anchor="middle" fill="#929aaa" font-size="10">${day}</text>`).join("");
+  svg.innerHTML = `<defs><linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#736bf0" stop-opacity=".28"/><stop offset="1" stop-color="#736bf0" stop-opacity=".02"/></linearGradient></defs>${grid}<polygon points="${area}" fill="url(#trendFill)"/><polyline points="${points}" fill="none" stroke="#736bf0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${numbers.map((n,i)=>`<circle cx="${x(i)}" cy="${y(n)}" r="3.5" fill="#fff" stroke="#736bf0" stroke-width="2"/>`).join("")}${days}`;
+}
+
+let dashboardRangeDays = 7;
+function toggleRangeMenu() {
+  const options = document.getElementById("rangeOptions");
+  const button = document.getElementById("rangeButton");
+  const opening = options.hidden;
+  options.hidden = !opening;
+  button.setAttribute("aria-expanded", String(opening));
+}
+
+function selectDashboardRange(days) {
+  dashboardRangeDays = days;
+  const label = `Last ${days} Days`;
+  document.getElementById("rangeButton").textContent = `▣ ${label}⌄`;
+  document.getElementById("rangeOptions").hidden = true;
+  document.getElementById("rangeButton").setAttribute("aria-expanded", "false");
+  document.getElementById("dashTrendRange").textContent = label.toLowerCase();
+  document.getElementById("dashPlatformRange").textContent = label.toLowerCase();
+  renderDashboard();
+}
+
+function startNewPost() {
+  const prompt = document.getElementById("campaignPrompt");
+  prompt.scrollIntoView({ behavior: "smooth", block: "center" });
+  window.setTimeout(() => prompt.focus(), 250);
+  document.getElementById("scheduleStatus").textContent = "Describe the campaign below, then select Generate.";
+}
+
+async function renderDashboard() {
+  if (!document.getElementById("dashEngagement")) return;
+  try {
+    const [analytics, assetsData, calendarData] = await Promise.all([getApi("/api/analytics"), getApi("/api/assets"), getApi("/api/calendar")]);
+    const assets = assetsData.assets || [];
+    const rows = analytics.campaigns_detail || [];
+    const cutoff = Date.now() - dashboardRangeDays * 24 * 60 * 60 * 1000;
+    const visibleAssets = assets.filter(asset => !asset.created_at || new Date(asset.created_at).getTime() >= cutoff);
+    const visibleIds = new Set(visibleAssets.map(asset => asset.campaign_id));
+    const visibleRows = rows.filter(row => visibleIds.has(row.campaign_id));
+    const metrics = visibleRows.map(row => row.analytics?.latest?.instagram?.metrics || {});
+    const engagements = metrics.map(m => (m.like_count || 0) + (m.comments_count || 0) + (m.saved || 0) + (m.shares || 0));
+    const engagementTotal = engagements.reduce((a,b)=>a+b,0);
+    const published = visibleRows.filter(r => r.social_posts?.instagram?.published).length;
+    document.getElementById("dashEngagement").textContent = metric(engagementTotal);
+    document.getElementById("dashPublished").textContent = metric(published);
+    document.getElementById("statQuality").textContent = analytics.average_quality == null ? "—" : `${analytics.average_quality}/100`;
+    document.getElementById("statAssets").textContent = metric(visibleAssets.length);
+    document.getElementById("statCompleted").textContent = `${published} published`;
+    document.getElementById("dashDonutCount").textContent = metric(published);
+    document.getElementById("dashEngagementDelta").textContent = engagementTotal ? "Live data" : "No data";
+    drawTrend(engagements.slice(-Math.min(dashboardRangeDays, 7)));
+
+    const ig = published, li = visibleRows.filter(r => r.social_posts?.linkedin?.published).length, drafts = Math.max(0, visibleAssets.length - ig - li);
+    const parts = [{name:"Instagram",count:ig,color:"#e83d62"},{name:"LinkedIn",count:li,color:"#137db7"},{name:"Drafts",count:drafts,color:"#746cf0"}];
+    const total = Math.max(1, parts.reduce((sum,p)=>sum+p.count,0)); let at = 0;
+    document.getElementById("dashDonut").style.background = `conic-gradient(${parts.map(p=>{const start=at/total*100;at+=p.count;return `${p.color} ${start}% ${at/total*100}%`;}).join(",")})`;
+    document.getElementById("dashLegend").innerHTML = parts.map(p=>`<span style="--dot:${p.color}">${escapeHtml(p.name)} · ${p.count}</span>`).join("");
+
+    const latest = visibleAssets.slice(-6);
+    document.getElementById("dashQualityBars").innerHTML = latest.length ? latest.map((a,i)=>`<div class="quality-bar"><i style="height:${Math.max(5,Number(a.quality_score || 0))}%"></i><b>${escapeHtml((a.activity || "Campaign").slice(0,12))}</b><span>${a.quality_score ?? "—"}</span></div>`).join("") : `<p class="muted">Quality scores appear once campaigns are generated.</p>`;
+    const tags = {}; visibleAssets.forEach(a => (a.hashtags || []).forEach(tag => { const key=tag.replace(/^#/,""); tags[key]=(tags[key]||0)+1; }));
+    const topTags = Object.entries(tags).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    document.getElementById("dashHashtags").innerHTML = topTags.length ? topTags.map(([tag,count])=>`<div class="hashtag-bar"><i style="height:${Math.max(12,count/Math.max(...topTags.map(x=>x[1]))*100)}%"></i><b>#${escapeHtml(tag)}</b><span>${count} uses</span></div>`).join("") : `<p class="muted">Hashtag performance will appear after campaigns are generated.</p>`;
+    document.getElementById("dashSuggestionTags").textContent = topTags.length ? topTags.slice(0,3).map(([tag])=>`#${tag}`).join("  ") : "Generate campaigns to discover your best tags.";
+    document.getElementById("dashPosts").innerHTML = visibleAssets.slice().reverse().slice(0,5).map(asset => { const m=(visibleRows.find(r=>r.campaign_id===asset.campaign_id)?.analytics?.latest?.instagram?.metrics)||{}; const e=(m.like_count||0)+(m.comments_count||0)+(m.saved||0)+(m.shares||0); return `<tr><td class="post-title">${escapeHtml((asset.activity || "Campaign").slice(0,36))}</td><td>Instagram</td><td>${metric(e)}</td><td>${asset.quality_score ?? "—"}/100</td><td><span class="status-dot"></span>${escapeHtml(asset.status || "Draft")}</td></tr>`; }).join("") || `<tr><td colspan="5" class="muted">No campaigns in this period.</td></tr>`;
+    const events = Object.entries(calendarData.events || {}).flatMap(([date,items]) => items.map(item=>({date,...item}))).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
+    document.getElementById("dashCalendar").innerHTML = events.length ? events.map(event=>`<div class="mini-event"><b>${escapeHtml(event.activity)}</b><span>${escapeHtml(event.date)} · ${escapeHtml(event.status || "scheduled")}</span></div>`).join("") : `<p class="muted">Upload a schedule to see your upcoming content.</p>`;
+  } catch {
+    drawTrend([]);
+    document.getElementById("dashPosts").innerHTML = `<tr><td colspan="5" class="muted">Start the backend to load dashboard data.</td></tr>`;
+  }
+}
 
 async function renderCampaigns(targetId, libraryOnly=false) {
   const target = document.getElementById(targetId);
@@ -1012,6 +1117,7 @@ function showView(view) {
   if (view === "analytics") renderAnalytics();
   if (view === "integrations") renderIntegrations();
   if (view === "settings") renderSettings();
+  if (view === "dashboard") renderDashboard();
   if (view === "admin") renderAdmin();
 }
 document.querySelectorAll(".nav-item[data-view]").forEach(item => item.addEventListener("click", () => {
@@ -1425,6 +1531,7 @@ function runCampaignWithImages(scheduledCampaigns = null, imageIds = [], promptO
       activeRunId = null;
       completedCount++;
       document.getElementById("statCompleted").textContent = completedCount;
+      renderDashboard();
       pushActivity("Campaign completed");
       ws.close();
       return;
@@ -1526,15 +1633,6 @@ function runCampaignWithImages(scheduledCampaigns = null, imageIds = [], promptO
         `<strong>Activity:</strong> ${msg.state.campaign?.activity || prompt}<br>` +
         `<strong>Campaign:</strong> ${plan.festival || plan.objective || "Interpreted campaign"}<br>` +
         `<strong>Image prompt:</strong> ${msg.state.image_prompt || brief.composition || "Preparing..."}`;
-      if (msg.state.costar_brief) {
-        const c = msg.state.costar_brief;
-        document.getElementById("dashboardBrief").innerHTML =
-          `<b>Context:</b> ${c.context || ""}<br><b>Objective:</b> ${c.objective || ""}<br>` +
-          `<b>Style:</b> ${c.style || ""}<br><b>Tone:</b> ${c.tone || ""}<br>` +
-          `<b>Audience:</b> ${c.audience || ""}<br><b>Response:</b> ${c.response || ""}`;
-      }
-      document.getElementById("dashboardBrief").textContent =
-        `${msg.state.campaign?.activity || prompt} — ${msg.state.image_prompt || brief.composition || "Campaign details preparing..."}`;
     }
     if (key === "content_agent" && msg.state) {
       document.getElementById("caption").textContent = msg.state.caption || "";

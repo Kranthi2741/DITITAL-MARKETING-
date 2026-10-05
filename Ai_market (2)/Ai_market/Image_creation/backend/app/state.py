@@ -21,6 +21,7 @@ class CampaignState(TypedDict, total=False):
     # strategist output
     marketing_strategy: dict  # audience, content pieces, visual direction
     design_direction: dict  # selected style, layout, headline and visual story
+    rhyming_tagline: str  # short occasion-specific supporting line for the artwork
     creative_concepts: list  # distinct concepts proposed for this campaign
     selected_concept: dict
 

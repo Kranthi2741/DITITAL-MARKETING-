@@ -122,9 +122,7 @@ def _build_text_hierarchy(state: CampaignState, campaign_type: str) -> str:
     dates      = plan.get("event_dates") or plan.get("scheduled_date") or ""
     headline   = plan.get("main_headline") or direction.get("headline") or f"{brand} at {event}" if (brand and event) else (brand or event)
     message    = plan.get("main_message") or plan.get("objective") or costar.get("objective") or ""
-    cta        = plan.get("cta") or direction.get("cta") or costar.get("response") or ""
-    offer      = plan.get("offer") or ""
-    supporting = direction.get("supporting_copy") or costar.get("context") or ""
+    supporting = state.get("rhyming_tagline") or direction.get("supporting_copy") or costar.get("context") or ""
 
     lines = []
 
@@ -138,8 +136,6 @@ def _build_text_hierarchy(state: CampaignState, campaign_type: str) -> str:
             lines.append(f'EVENT NAME: "{event}"')
         if message:
             lines.append(f'MAIN MESSAGE: "{message}"')
-        if cta:
-            lines.append(f'CALL TO ACTION (highly prominent): "{cta}"')
         if supporting:
             lines.append(f'SUPPORTING TEXT: "{supporting}"')
 
@@ -150,14 +146,10 @@ def _build_text_hierarchy(state: CampaignState, campaign_type: str) -> str:
             lines.append(f'MAIN MESSAGE: "{message}"')
         if supporting:
             lines.append(f'SUPPORTING MESSAGE: "{supporting}"')
-        if cta:
-            lines.append(f'CALL TO ACTION: "{cta}"')
 
     elif campaign_type == "sports":
-        achievement = offer or message or "1st Prize Winners"
+        achievement = message or "1st Prize Winners"
         lines.append(f'MAIN HEADLINE (largest, most prominent): "{headline or achievement}"')
-        if offer:
-            lines.append(f'ACHIEVEMENT BADGE (very prominent, bold): "{offer}"')
         if dates:
             lines.append(f'DATE: "{dates}"')
         if brand:
@@ -166,17 +158,11 @@ def _build_text_hierarchy(state: CampaignState, campaign_type: str) -> str:
             lines.append(f'MAIN MESSAGE: "{message}"')
         if supporting:
             lines.append(f'SUPPORTING TEXT: "{supporting}"')
-        if cta:
-            lines.append(f'CALL TO ACTION: "{cta}"')
 
     else:
         lines.append(f'MAIN HEADLINE: "{headline}"')
-        if offer:
-            lines.append(f'OFFER (most prominent): "{offer}"')
         if message:
             lines.append(f'MAIN MESSAGE: "{message}"')
-        if cta:
-            lines.append(f'CALL TO ACTION: "{cta}"')
         if supporting:
             lines.append(f'SUPPORTING TEXT: "{supporting}"')
 
@@ -311,6 +297,8 @@ DESIGN REQUIREMENTS:
 
 DO NOT INCLUDE:
 {avoid_block}
+- No discounts, prices, offers, product collections, shopping, buying, or sales language
+- No "shop now", "buy now", "limited offer", "exclusive deal", or call-to-action buttons
 - No glowing neon sci-fi effects
 - No floating holographic UI elements
 - No obviously AI-generated synthetic faces
