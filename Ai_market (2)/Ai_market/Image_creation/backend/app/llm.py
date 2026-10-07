@@ -1,7 +1,7 @@
 """
 Single place that handles all AI calls:
 - Text reasoning (Planner, Strategist, Creative Director, Content Agent)
-  → Gemini 2.5 Flash (google-generativeai)
+  → local Ollama Gemma 3
 - Image generation
   → kie.ai
 """
@@ -10,25 +10,34 @@ import os
 import json
 import time
 import requests
-import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
 
-GEMINI_MODEL = "gemini-2.5-flash"
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3:4b")
 KIE_BASE_URL = "https://api.kie.ai"
 
 
-def _get_gemini_client():
-    """Configure and return the Gemini generative model."""
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "GEMINI_API_KEY not set. Get a free key at "
-            "https://aistudio.google.com/apikey"
-        )
-    genai.configure(api_key=api_key)
-    return genai.GenerativeModel(GEMINI_MODEL)
+def _ollama_generate(prompt: str) -> str:
+    """Generate text locally with Ollama and return the model response."""
+    response = requests.post(
+        f"{OLLAMA_BASE_URL.rstrip('/')}/api/generate",
+        json={
+            "model": OLLAMA_MODEL,
+            "prompt": prompt,
+            "stream": False,
+            "format": "json",
+            "options": {"temperature": 0.4, "num_ctx": 8192},
+        },
+        timeout=300,
+    )
+    response.raise_for_status()
+    result = response.json()
+    text = result.get("response", "")
+    if not text:
+        raise RuntimeError("Ollama returned an empty response")
+    return text
 
 
 def _call_with_retry(fn, max_attempts=3, base_delay=2):
@@ -76,27 +85,19 @@ def _repair_json(text: str) -> str:
 
 
 def ask_json(system_prompt: str, user_prompt: str, model: str = None) -> dict:
-    """Ask Gemini 2.5 Flash for a structured JSON response. Never raises on parse
+    """Ask Ollama for a structured JSON response. Never raises on parse
     errors — returns an empty dict as last resort so the pipeline always continues."""
     full_prompt = (
         system_prompt
         + "\n\nIMPORTANT: Respond ONLY with a single valid JSON object. "
         "Use double quotes for all keys and string values. "
         "No markdown, no code fences, no explanation before or after. "
-        "Keep every string value under 150 characters."
+        "Keep values concise, but fully describe each required scene and action."
         f"\n\n{user_prompt}"
     )
 
     def _call():
-        client = _get_gemini_client()
-        response = client.generate_content(
-            full_prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.7,
-                max_output_tokens=8192,
-            ),
-        )
-        return response.text or ""
+        return _ollama_generate(full_prompt)
 
     raw = ""
     for attempt in range(3):
@@ -199,32 +200,58 @@ def generate_image(prompt: str, output_path: str) -> str:
 
 
 def evaluate_image(image_path: str, requirements: dict) -> dict:
-    """QA check using OpenRouter text model — no vision API needed.
-    Since we can't send the image to a text model, we evaluate based on
-    whether the prompt requirements were well-formed and trust kie.ai
-    to have followed them. Returns a passing score so the pipeline continues."""
-    brief = requirements.get("creative_brief", {})
-    campaign_plan = requirements.get("campaign_plan", {})
-
-    system_prompt = (
-        "You are a marketing campaign quality reviewer. "
-        "Based on the campaign brief and requirements provided, "
-        "assess whether the image generation prompt was well-structured and complete. "
-        "Assume the image was generated correctly from the prompt. "
-        "Return JSON: {\"score\": int, \"issues\": [str]}. "
-        "Score 85-95 if the brief is complete and well-structured. "
-        "Score 70-84 if minor details are missing. "
-        "Keep issues list empty or minimal if the brief looks good."
+    """Review actual pixels locally. Transport/parse failure must never approve."""
+    import base64
+    from pathlib import Path
+    prompt = (
+        "Inspect the attached image itself against the campaign requirements. "
+        "Return JSON: score (integer 0-100), issues (array of strings), "
+        "critical_issues (array of strings). "
+        "Minor clutter, slight blur, stylistic preferences and suggestions belong ONLY "
+        "in issues and affect score; they are NEVER critical defects. "
+        "Check immediate topic recognition, central focal subject, distinct supporting "
+        "actions, believable anatomy, plausible equipment and procedures, no misleading "
+        "visual claims, and absence of unwanted writing. Report uncertain procedural "
+        "accuracy for human review rather than claiming it is correct. "
+        "Critical issues include incorrect procedures, misleading meaning, distorted "
+        "anatomy and faces or essential actions in reserved copy/logo areas. "
+        "Judge requested safe areas using layout_zones. Logo and copy are added later; "
+        "do not penalize their absence. Be specific about visible defects and locations. "
+        "Do not assume the image followed its prompt. Requirements: "
+        + json.dumps(requirements, ensure_ascii=False)
     )
-    user_prompt = (
-        f"Campaign plan: {campaign_plan}\n"
-        f"Creative brief: {brief}\n"
-        f"Design direction: {requirements.get('design_direction', {})}\n"
-        "Is this brief complete and well-structured for a professional social media campaign?"
+    response = requests.post(
+        f"{OLLAMA_BASE_URL.rstrip('/')}/api/chat",
+        json={"model": os.environ.get("OLLAMA_VISION_MODEL", OLLAMA_MODEL),
+              "messages": [{"role": "user", "content": prompt,
+                            "images": [base64.b64encode(Path(image_path).read_bytes()).decode("ascii")]}],
+              "stream": False, "format": "json", "options": {"temperature": 0}},
+        timeout=300,
     )
-
-    try:
-        return ask_json(system_prompt, user_prompt)
-    except Exception:
-        # If even this fails, return a passing score so the pipeline doesn't stall
-        return {"score": 80, "issues": []}
+    response.raise_for_status()
+    result = json.loads(response.json()["message"]["content"])
+    if (not isinstance(result, dict) or type(result.get("score")) is not int
+            or not 0 <= result["score"] <= 100
+            or any(not isinstance(result.get(k), list)
+                   or not all(isinstance(x, str) for x in result[k])
+                   for k in ("issues", "critical_issues"))):
+        raise ValueError("Vision review was incomplete; campaign was not approved.")
+    # Confirm proposed blockers separately so a stylistic suggestion cannot veto
+    # a passing score merely because the first review used the wrong field.
+    if result["critical_issues"]:
+        confirmation = ask_json(
+            "Classify each proposed blocker conservatively. Return JSON: "
+            "confirmed_indices (integer array). Confirm only concrete major defects: "
+            "clearly incorrect procedures, harmful misinformation, severe anatomy "
+            "distortion, wrong campaign subject, or essential faces/actions hidden by "
+            "reserved overlay zones. Mild blur, clutter, layout taste or a request for "
+            "sharper focus are NOT blockers. Uncertain judgments are not confirmed.",
+            json.dumps({"proposed_blockers": result["critical_issues"]}))
+        indices = confirmation.get("confirmed_indices") if isinstance(confirmation, dict) else None
+        if not isinstance(indices, list) or any(
+                type(i) is not int or not 0 <= i < len(result["critical_issues"]) for i in indices):
+            raise ValueError("Quality severity review was incomplete; no approval was issued.")
+        proposed = result["critical_issues"]
+        result["critical_issues"] = [s for i, s in enumerate(proposed) if i in indices]
+        result["issues"] += [s for i, s in enumerate(proposed) if i not in indices]
+    return result

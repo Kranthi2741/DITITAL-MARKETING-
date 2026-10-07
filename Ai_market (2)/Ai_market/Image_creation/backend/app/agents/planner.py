@@ -1,56 +1,46 @@
+"""Preserve explicit CO-STAR fields and separate subject from communication goals."""
+import json
+import re
 from app.llm import ask_json
 from app.state import CampaignState
 
 
-def planner_node(state: CampaignState) -> CampaignState:
-    system_prompt = (
-        "You are a marketing campaign planner for a social media agency. "
-        "Your job is to turn ANY user input into a compelling social media campaign — "
-        "even if the user is sharing a personal story, achievement, or anecdote. "
-        "NEVER say 'no campaign requested' or treat input as non-actionable. "
-        "Personal stories = achievement posts. News = announcement posts. Events = event posts. "
-        "Always extract or CREATE: a strong headline and a main message. "
-        "This application creates clean occasion and awareness artwork, not sales ads. "
-        "Never create an offer, discount, product promotion, purchase message, or call to action. "
-        "For personal achievements like winning prizes, meeting VIPs, or sports wins: "
-        "  - headline = the achievement (e.g. '1st Prize Winners!') "
-        "  - main_message = the story in one punchy sentence "
-        "  - cta = celebratory CTA (e.g. 'Congratulations to our team!') "
-        "  - festival = the event/occasion (e.g. 'Cricket Tournament 2025') "
-        "  - offer = the prize or achievement (e.g. '1st Prize - Rs. 1,00,000') "
-        "Extract ALL specific details: brand name, event name, dates, prize amounts, "
-        "VIP names, locations, team names, offers, CTAs. "
-        "Return JSON with this exact structure: "
-        '{"campaign_plan": {"festival": str, "business": str, "objective": str, "tone": str, "platform": str, '
-        '"event_name": str or null, "event_dates": str or null, "brand_name": str or null, '
-        '"main_headline": str, "main_message": str, "cta": str, '
-        '"offer": str or null, "product_name": str or null}, '
-        '"costar": {"context": str, "objective": str, "style": str, "tone": str, "audience": str, "response": str}}. '
-        "Preserve every detail from the user including names, amounts, locations, dates."
-    )
-    business = state.get("business_profile", {})
-    user_input = f"Request: {state['user_prompt']}\nBusiness profile: {business}"
+def parse_costar(prompt):
+    matches = list(re.finditer(r"\b(Context|Objective|Style|Tone|Audience|Response)\s*:", prompt, re.I))
+    return {m.group(1).lower(): prompt[m.end():matches[i+1].start() if i+1 < len(matches) else len(prompt)].strip()
+            for i, m in enumerate(matches)}
 
-    result = ask_json(system_prompt, user_input)
+
+def planner_node(state: CampaignState) -> CampaignState:
     prompt = state.get("user_prompt", "")
-    plan = result.get("campaign_plan") or result or {}
-    # Fallback: if model returned empty/bad JSON, build a minimal plan from the raw prompt
-    if not plan.get("objective"):
-        plan = {
-            "festival": prompt[:60],
-            "business": (state.get("business_profile") or {}).get("name", "Brand"),
-            "objective": prompt[:100],
-            "tone": "celebratory",
-            "platform": "Instagram",
-            "main_headline": prompt[:50],
-            "main_message": prompt[:100],
-            "cta": "",
-            "offer": None,
-        }
-    # Do not allow the planning model to add retail language to artwork.
-    plan["cta"] = ""
-    plan["offer"] = None
-    return {
-        "campaign_plan": plan,
-        "costar_brief": result.get("costar", {}),
-    }
+    explicit = parse_costar(prompt)
+    system = """
+Interpret the full request, preserving both the occasion and every requested
+communication goal. Platform/output instructions are delivery requirements, not
+the substantive message. Context may contain several goals joined by 'and'.
+Return JSON: {"campaign_plan": {"festival": str, "business": str,
+"objective": str, "tone": str, "platform": str, "main_headline": str,
+"main_message": str, "communication_goals": [str], "brand_name": str},
+"costar": {"context": str, "objective": str, "style": str, "tone": str,
+"audience": str, "response": str}}.
+communication_goals must cover all substantive clauses, including requested
+actions, care, education or risk reduction, not only the occasion or emotion.
+Use a descriptive headline of at most 8 words. Preserve sensitive tone.
+Do not invent brands, events or claims. Distinguish screening/early detection
+from prevention; never promise cures, safety or survival. Avoid blame.
+"""
+    for _ in range(2):
+        result = ask_json(system, json.dumps({"request": prompt, "explicit_costar": explicit,
+                         "business_profile": state.get("business_profile", {})}, ensure_ascii=False))
+        plan = result.get("campaign_plan", {}) if isinstance(result, dict) else {}
+        goals = plan.get("communication_goals") if isinstance(plan, dict) else None
+        if isinstance(goals, list) and goals and all(isinstance(g, str) and g.strip() for g in goals):
+            break
+    else:
+        raise ValueError("Could not extract the full campaign goals. Please retry.")
+    costar = result.get("costar", {})
+    costar = costar if isinstance(costar, dict) else {}
+    costar.update(explicit)
+    plan["source_context"] = explicit.get("context", prompt)
+    plan["cta"], plan["offer"] = "", None
+    return {"campaign_plan": plan, "costar_brief": costar}

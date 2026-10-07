@@ -2,8 +2,8 @@
 Run the full agent pipeline from the command line.
 
 Setup:
-  export GEMINI_API_KEY="your-key-here"      (Mac/Linux)
-  $env:GEMINI_API_KEY = "your-key-here"       (PowerShell)
+  ollama pull gemma3:4b
+  ollama serve
 
 Run:
   python run.py "Create a Diwali campaign for my coffee shop"

@@ -397,8 +397,8 @@ async def update_settings(payload: dict):
 @app.post("/api/settings/logo")
 async def upload_logo(logo: UploadFile = File(...)):
     suffix = Path(logo.filename or "").suffix.lower()
-    if suffix not in {".png", ".jpg", ".jpeg", ".webp", ".svg"}:
-        return {"error": "Upload a PNG, JPG, WebP, or SVG logo file."}
+    if suffix not in {".png", ".jpg", ".jpeg", ".webp"}:
+        return {"error": "Upload a PNG, JPG, or WebP logo file."}
     logo_dir = DATA_DIR / "brand"
     logo_dir.mkdir(parents=True, exist_ok=True)
     logo_path = logo_dir / f"logo{suffix}"
@@ -472,7 +472,8 @@ def build_log_message(node_name: str, node_state: dict) -> str:
         if approved:
             return f"Reviewed image — score {score}/100 — APPROVED"
         issues = node_state.get("quality_issues", [])
-        return f"Reviewed image — score {score}/100 — REJECTED ({', '.join(issues[:2])}) — sending back for fixes"
+        reason = node_state.get("quality_rejection_reason") or ", ".join(issues[:2])
+        return f"Reviewed image — score {score}/100 — REJECTED ({reason})"
     if node_name == "content_agent":
         return f"Wrote caption and {len(node_state.get('hashtags', []))} hashtags"
     if node_name == "compositor":
@@ -698,6 +699,9 @@ async def campaign_socket(websocket: WebSocket):
                         "quality_score": node_state.get("quality_score"),
                         "quality_approved": node_state.get("quality_approved"),
                         "quality_issues": node_state.get("quality_issues"),
+                        "quality_suggestions": node_state.get("quality_suggestions"),
+                        "quality_critical_issues": node_state.get("quality_critical_issues"),
+                        "quality_rejection_reason": node_state.get("quality_rejection_reason"),
                         "retry_count": node_state.get("retry_count"),
                         "caption": node_state.get("caption"),
                         "hashtags": node_state.get("hashtags"),

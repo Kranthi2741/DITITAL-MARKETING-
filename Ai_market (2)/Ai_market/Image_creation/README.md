@@ -54,13 +54,18 @@ Planner -> Strategist -> Creative Director -> Image Generator -> Quality Agent
 cd backend
 copy .env.example .env
 # edit .env and paste in your real keys:
-#   GEMINI_API_KEY=...        (free at https://aistudio.google.com/apikey)
-#   SINGULARITY_API_KEY=...   (for gpt-image-2 image generation)
+#   OLLAMA_BASE_URL=http://localhost:11434
+#   OLLAMA_MODEL=gemma3:4b
+#   KIE_API_KEY=...           (for Kie.ai image generation)
 #   CLOUDINARY_CLOUD_NAME=... and CLOUDINARY_UPLOAD_PRESET=...
 #   INSTAGRAM_ACCESS_TOKEN=...
 #   LINKEDIN_ACCESS_TOKEN=... and LINKEDIN_AUTHOR_URN=...
 
 pip install -r requirements.txt
+
+# In a second terminal, install and start the local text model:
+ollama pull gemma3:4b
+ollama serve
 ```
 
 ## Run — Option A: with the UI (recommended)

@@ -29,30 +29,15 @@ def recent_taglines() -> list[str]:
 
 def _fallback_rhyme(state: CampaignState) -> str:
     """Safe, useful fallback when the strategy model omits the short tagline."""
-    text = " ".join([
-        state.get("user_prompt", ""),
-        state.get("campaign_plan", {}).get("festival", ""),
-        state.get("campaign_plan", {}).get("objective", ""),
-    ]).lower()
-    choices = (
-        (("doctor", "physician", "healthcare"), "Care to Share"),
-        (("cancer", "oncology"), "Hope Takes Scope"),
-        (("ugadi",), "New Year, New Cheer"),
-        (("holi",), "Splash Bright, Feel Light"),
-        (("coffee", "cafe"), "Sip, Smile, Stay a While"),
-        (("fitness", "workout", "health"), "Move to Improve"),
-    )
-    for keywords, tagline in choices:
-        if any(keyword in text for keyword in keywords):
-            return tagline
-    return "Glow and Grow"
+    return ""
 
 
 def strategist_node(state: CampaignState) -> CampaignState:
     system_prompt = (
         "You are a senior social-campaign strategist and art director. Plan an "
         "original, publish-ready campaign—not a generic AI scene. Choose exactly one "
-        "style from the allowed style library and avoid styles used recently when a "
+        "style from the allowed style library. Prefer community_collage for a rich "
+        "photographic story with a central visual and distinct supporting actions. Avoid styles used recently when a "
         "suitable alternative exists. Then propose three clearly different visual "
         "concepts for the same message. Each concept must have a different composition "
         "and visual story, not merely different colours. "
@@ -70,7 +55,8 @@ def strategist_node(state: CampaignState) -> CampaignState:
     )
     strategy = ask_json(
         system_prompt,
-        "Create one short, meaningful, occasion-specific rhyming or alliterative supporting line. "
+        "Create a short descriptive headline of at most 8 words and one meaningful supporting line. "
+        "Respect the requested tone and sensitivity; do not force rhyme, celebration or cheer. "
         "It must be 2-7 words, use plain language, suit the campaign, avoid medical or performance claims, "
         "and not duplicate any recent tagline.\n"
         f"Campaign plan: {state['campaign_plan']}\nRecently used styles: {recent_styles()}\n"
@@ -92,7 +78,27 @@ def strategist_node(state: CampaignState) -> CampaignState:
         direction["style"] = "editorial_hero"
     direction["cta"] = ""
     strategy["offer"] = None
-    tagline = str(strategy.get("rhyming_tagline") or _fallback_rhyme(state)).strip()[:70]
+    tagline = str(strategy.get("rhyming_tagline") or "").strip()
+    # Review copy separately: do not let a catchy rhyme override the actual message.
+    for _ in range(2):
+        copy = ask_json(
+            "Write accurate, sensitive campaign copy. Return JSON: headline, slogan. "
+            "Headline must explicitly name the campaign subject or occasion from the plan, "
+            "not a generic motivational phrase. Headline: at most 8 words and 64 characters. Slogan: at most 8 words "
+            "and 70 characters. No forced rhyme, guarantees, blame or unsupported "
+            "claims. Preserve all requested meaning; distinguish early detection "
+            "from prevention. Respect grief and serious subjects.",
+            json.dumps({"plan": state["campaign_plan"], "costar": state.get("costar_brief", {})}))
+        headline = copy.get("headline", "") if isinstance(copy, dict) else ""
+        slogan = copy.get("slogan", "") if isinstance(copy, dict) else ""
+        if (isinstance(headline, str) and isinstance(slogan, str)
+                and 0 < len(headline) <= 64 and 0 < len(slogan) <= 70
+                and len(headline.split()) <= 8 and len(slogan.split()) <= 8):
+            direction["headline"], direction["supporting_copy"] = headline, slogan
+            tagline = slogan
+            break
+    else:
+        raise ValueError("Could not prepare concise campaign copy. Please retry.")
     return {
         "marketing_strategy": strategy,
         "design_direction": direction,

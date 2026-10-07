@@ -36,6 +36,8 @@ def add_brand_logo(image_path: str) -> None:
 
 
 def image_generator_node(state: CampaignState) -> CampaignState:
+    from app.agents.compositor import logo_file, _load_brand
+    logo_file(_load_brand())  # Validate branding before a paid generation request.
     # A real photo supplied by the user is the campaign creative.
     source_image = state.get("source_image_path")
     if source_image:

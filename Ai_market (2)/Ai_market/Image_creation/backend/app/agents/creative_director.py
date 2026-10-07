@@ -1,319 +1,130 @@
-"""
-Creative Director — builds a rich, structured kie.ai-style image prompt.
-
-Instead of a generic art-direction description, this agent assembles the same
-kind of detailed, section-by-section prompt that produces great results on
-kie.ai (event posters, awareness campaigns, sports achievements, etc.).
-"""
-
-from app.design_styles import STYLE_LIBRARY
+"""Topic-derived photographic storytelling; no activity lookup tables."""
+import json
 from app.llm import ask_json
 from app.state import CampaignState
 
 
-# ── campaign type detection ───────────────────────────────────────────────────
-
-def _detect_campaign_type(state: CampaignState) -> str:
-    prompt  = (state.get("user_prompt") or "").lower()
-    festival = (state.get("campaign_plan", {}).get("festival") or "").lower()
-    combined = prompt + " " + festival
-
-    if any(k in combined for k in ("conference", "summit", "expo", "imc", "event",
-                                    "participation", "booth", "demo", "launch", "meetup",
-                                    "congress", "convention", "fair", "exhibition")):
-        return "event"
-    if any(k in combined for k in ("cricket", "football", "sport", "match",
-                                    "tournament", "team", "player", "prize", "winner")):
-        return "sports"
-    if any(k in combined for k in ("birthday", "anniversary", "congratulation", "wedding",
-                                    "celebration", "achievement", "milestone")):
-        return "celebration"
-    if any(k in combined for k in ("day", "health", "awareness", "world", "cancer",
-                                    "heart", "lung", "liver", "kidney", "diabetes",
-                                    "mental", "pharmacy", "pharmacist")):
-        return "awareness"
-    return "generic"
+def _valid(brief):
+    if not isinstance(brief, dict):
+        return False
+    if not all(isinstance(brief.get(k), str) and brief[k].strip()
+               for k in ("composition", "topic_visual_direction", "central_visual")):
+        return False
+    scenes = brief.get("scenes")
+    return (isinstance(scenes, list) and 3 <= len(scenes) <= 5
+            and all(isinstance(s, dict) and all(
+                isinstance(s.get(k), str) and s[k].strip()
+                for k in ("action", "setting", "meaning", "placement")) for s in scenes)
+            and isinstance(brief.get("avoid"), list)
+            and all(isinstance(s, str) for s in brief["avoid"]))
 
 
-# ── visual theme builder ──────────────────────────────────────────────────────
+def _goal_ids(scene):
+    raw = scene.get("goal_indices", [scene.get("goal_index")])
+    if not isinstance(raw, list):
+        raw = [raw]
+    return {int(x) for x in raw
+            if type(x) is int or (isinstance(x, str) and x.isdigit())}
 
-_VISUAL_THEMES = {
-    "event": (
-        "modern conference hall with large LED screens, professional stage lighting, "
-        "networking professionals, digital innovation atmosphere, futuristic technology "
-        "exhibition environment, subtle crowd silhouettes, premium corporate event setup"
-    ),
-    "awareness": (
-        "clean modern healthcare environment, medical professionals, soft clinical lighting, "
-        "subtle anatomical or health-related visuals, reassuring and informative atmosphere, "
-        "digital health interfaces, premium medical photography"
-    ),
-    "sports": (
-        "dramatic sports stadium with floodlights, dynamic action photography, "
-        "celebratory atmosphere, confetti, trophy, team energy, "
-        "professional sports event lighting, crowd atmosphere"
-    ),
-    "celebration": (
-        "elegant celebratory setting, warm golden lighting, premium event atmosphere, "
-        "tasteful decorative elements, sophisticated festive design, "
-        "professional corporate celebration photography"
-    ),
-    "generic": (
-        "premium corporate environment, clean modern aesthetic, professional lighting, "
-        "sophisticated business atmosphere, polished commercial photography"
-    ),
-}
-
-_COLOR_THEMES = {
-    "event": "deep navy blue, electric blue, white, subtle cyan accents, premium corporate gradients",
-    "awareness": "clean blue, white, soft cyan, teal, gentle gradients, medical professional palette",
-    "sports": "dynamic blue, black, gold, white, energetic high-contrast palette",
-    "celebration": "warm gold, deep navy, white, elegant festive tones",
-    "generic": "professional blue, white, clean gradients, corporate palette",
-}
-
-_INDUSTRY_VISUALS = {
-    "healthcare": (
-        "healthcare technology, remote patient monitoring, connected medical devices, "
-        "AI-powered health dashboards, digital patient monitoring interfaces, "
-        "real-time vital signs displays, modern hospital technology, "
-        "wearable health devices, telemedicine interfaces"
-    ),
-    "coffee": (
-        "premium coffee cup with steam, coffee beans, barista craft, "
-        "warm café atmosphere, artisan coffee preparation"
-    ),
-    "pharmacy": (
-        "pharmacy setting, medicine, healthcare professionals, "
-        "pharmaceutical products, clinical environment"
-    ),
-    "default": (
-        "professional business environment, modern technology, "
-        "corporate innovation, digital interfaces"
-    ),
-}
-
-
-def _get_industry_visuals(state: CampaignState) -> str:
-    plan = state.get("campaign_plan", {})
-    business = (plan.get("business") or "").lower()
-    prompt = (state.get("user_prompt") or "").lower()
-    combined = business + " " + prompt
-
-    if any(k in combined for k in ("health", "medical", "hospital", "patient",
-                                    "clinic", "pharma", "prorithm", "monitoring")):
-        return _INDUSTRY_VISUALS["healthcare"]
-    if any(k in combined for k in ("coffee", "café", "cafe", "barista")):
-        return _INDUSTRY_VISUALS["coffee"]
-    if any(k in combined for k in ("pharmacy", "pharmacist", "drug", "medicine")):
-        return _INDUSTRY_VISUALS["pharmacy"]
-    return _INDUSTRY_VISUALS["default"]
-
-
-# ── text hierarchy builder ────────────────────────────────────────────────────
-
-def _build_text_hierarchy(state: CampaignState, campaign_type: str) -> str:
-    plan      = state.get("campaign_plan", {})
-    direction = state.get("design_direction", {})
-    costar    = state.get("costar_brief", {})
-
-    brand      = plan.get("brand_name") or plan.get("business") or ""
-    event      = plan.get("event_name") or plan.get("festival") or ""
-    dates      = plan.get("event_dates") or plan.get("scheduled_date") or ""
-    headline   = plan.get("main_headline") or direction.get("headline") or f"{brand} at {event}" if (brand and event) else (brand or event)
-    message    = plan.get("main_message") or plan.get("objective") or costar.get("objective") or ""
-    supporting = state.get("rhyming_tagline") or direction.get("supporting_copy") or costar.get("context") or ""
-
-    lines = []
-
-    if campaign_type == "event":
-        lines.append(f'MAIN HEADLINE (largest, most prominent): "{headline}"')
-        if dates:
-            lines.append(f'DATE (clearly visible): "{dates}"')
-        if brand:
-            lines.append(f'BRAND NAME: "{brand}"')
-        if event:
-            lines.append(f'EVENT NAME: "{event}"')
-        if message:
-            lines.append(f'MAIN MESSAGE: "{message}"')
-        if supporting:
-            lines.append(f'SUPPORTING TEXT: "{supporting}"')
-
-    elif campaign_type == "awareness":
-        festival_upper = event.upper() if event else headline.upper()
-        lines.append(f'MAIN HEADLINE (largest): "{festival_upper}"')
-        if message:
-            lines.append(f'MAIN MESSAGE: "{message}"')
-        if supporting:
-            lines.append(f'SUPPORTING MESSAGE: "{supporting}"')
-
-    elif campaign_type == "sports":
-        achievement = message or "1st Prize Winners"
-        lines.append(f'MAIN HEADLINE (largest, most prominent): "{headline or achievement}"')
-        if dates:
-            lines.append(f'DATE: "{dates}"')
-        if brand:
-            lines.append(f'TEAM / BRAND NAME: "{brand}"')
-        if message:
-            lines.append(f'MAIN MESSAGE: "{message}"')
-        if supporting:
-            lines.append(f'SUPPORTING TEXT: "{supporting}"')
-
-    else:
-        lines.append(f'MAIN HEADLINE: "{headline}"')
-        if message:
-            lines.append(f'MAIN MESSAGE: "{message}"')
-        if supporting:
-            lines.append(f'SUPPORTING TEXT: "{supporting}"')
-
-    return "\n".join(lines)
-
-
-# ── aspect ratio ──────────────────────────────────────────────────────────────
-
-def _aspect_ratio(state: CampaignState, campaign_type: str) -> str:
-    prompt = (state.get("user_prompt") or "").lower()
-    if "16:9" in prompt or "landscape" in prompt or campaign_type == "sports":
-        return "16:9 landscape"
-    return "1:1 square"
-
-
-# ── main node ─────────────────────────────────────────────────────────────────
 
 def creative_director_node(state: CampaignState) -> CampaignState:
-    """Build a rich kie.ai-style image prompt from the campaign plan."""
-    previous_issues = state.get("quality_issues", [])
-    previous_brief  = state.get("creative_brief", {})
-    concepts        = state.get("creative_concepts", [])
-    concept_index   = min(state.get("retry_count", 0), max(len(concepts) - 1, 0))
-    selected_concept = concepts[concept_index] if concepts else {}
-    direction       = state.get("design_direction", {})
-    style           = direction.get("style", "editorial_hero")
-    plan            = state.get("campaign_plan", {})
-    profile         = state.get("business_profile", {})
-
-    campaign_type    = _detect_campaign_type(state)
-    visual_theme     = _VISUAL_THEMES[campaign_type]
-    color_theme      = _COLOR_THEMES[campaign_type]
-    industry_visuals = _get_industry_visuals(state)
-    text_hierarchy   = _build_text_hierarchy(state, campaign_type)
-    aspect_ratio     = _aspect_ratio(state, campaign_type)
-
-    # Brand kit overrides — use saved settings colors if provided
-    brand_primary = profile.get("primary_color", "")
-    brand_accent  = profile.get("accent_color", "")
-    brand_cta     = profile.get("cta_color", "")
-    brand_font    = profile.get("font", "")
-    brand_name    = profile.get("name", "") or plan.get("brand_name", "")
-    brand_tagline = profile.get("tagline", "")
-
-    # Build color palette — brand kit takes priority over campaign defaults
-    if brand_primary and brand_accent:
-        color_theme = (
-            f"Primary brand color: {brand_primary}, "
-            f"Accent color: {brand_accent}, "
-            f"CTA color: {brand_cta or brand_accent}, "
-            f"Use these EXACT brand colors prominently throughout the design."
-        )
-    font_instruction = f"Typography: {brand_font} — use this font style for all text in the design." if brand_font else "Clean modern professional typography."
-    brand_instruction = ""
-    if brand_name:
-        brand_instruction = f"Brand name '{brand_name}' must appear prominently."
-    if brand_tagline:
-        brand_instruction += f" Brand tagline: '{brand_tagline}'."
-
-    # Ask Gemini to enrich the brief with composition details and fill any gaps
-    system_prompt = (
-        "You are an award-winning art director. Given the campaign details, "
-        "produce a detailed image generation brief. "
-        "Return JSON: {\"composition\": str, \"colors\": [str], \"objects\": [str], "
-        "\"avoid\": [str], \"layout_notes\": str, \"supporting_copy\": str}. "
-        "composition: describe the exact visual scene in 2-3 sentences. "
-        "objects: list 6-10 specific visual elements that must appear. "
-        "avoid: list things that must NOT appear (fake logos, unrelated text, etc.). "
-        "Do NOT include an image_prompt field — that is built separately."
-    )
-    user_input = (
-        f"Campaign plan: {plan}\n"
-        f"Strategy: {state.get('marketing_strategy')}\n"
-        f"Chosen style: {style} — {STYLE_LIBRARY.get(style)}\n"
-        f"Selected concept: {selected_concept}\n"
-        f"Previous QA issues to fix: {previous_issues}\n"
-        f"Campaign type: {campaign_type}"
-    )
-    brief = ask_json(system_prompt, user_input)
-
-    # ── assemble the final kie.ai-style prompt ────────────────────────────────
-    avoid_list = brief.get("avoid", [])
-    avoid_block = "\n".join(f"- {a}" for a in avoid_list) if avoid_list else "- No fake logos\n- No unrelated text\n- No fake contact information"
-
-    image_prompt = f"""Create a premium professional social media promotional poster.
-
-CAMPAIGN TYPE: {campaign_type.upper()}
-
-{text_hierarchy}
-
-{brand_instruction}
-
-VISUAL SCENE:
-{brief.get("composition") or visual_theme}
-
-INDUSTRY-SPECIFIC VISUAL ELEMENTS:
-{industry_visuals}
-
-ADDITIONAL VISUAL ELEMENTS:
-{chr(10).join(f"- {o}" for o in brief.get("objects", []))}
-
-VISUAL STYLE:
-{STYLE_LIBRARY.get(style, "")}
-{visual_theme}
-
-COLOR PALETTE (STRICTLY FOLLOW THESE COLORS):
-{color_theme}
-
-TYPOGRAPHY:
-{font_instruction}
-
-PHOTOGRAPHY & REALISM STYLE:
-- Shot on Canon EOS R5 or Sony A7R IV professional camera
-- Natural ambient lighting mixed with professional studio lighting
-- Real human hands, real faces, authentic expressions — not CGI or 3D rendered
-- Genuine candid moments, not posed stock-photo stiffness
-- Slight natural depth of field blur on background
-- Real textures: fabric, skin, metal, glass — not synthetic or plastic-looking
-- Subtle natural imperfections that make it feel real and human
-- Color grading like a professional photographer's edit — warm, rich, not oversaturated
-- Looks like it was shot by a professional photographer and designed by a senior graphic designer
-- NOT a 3D render, NOT CGI, NOT AI-generated looking, NOT stock photo generic
-- Real people, real environments, real lighting — authentic and trustworthy
-
-DESIGN REQUIREMENTS:
-- Looks like it was designed by a senior human graphic designer at a top agency
-- Professional editorial quality — like you would see in Forbes, Wired, or a premium brand campaign
-- Clean typographic hierarchy with intentional whitespace
-- Balanced composition with clear visual flow
-- Suitable for LinkedIn, Instagram, and professional social media
-- Trustworthy, credible, human — not futuristic AI fantasy
-
-DO NOT INCLUDE:
-{avoid_block}
-- No discounts, prices, offers, product collections, shopping, buying, or sales language
-- No "shop now", "buy now", "limited offer", "exclusive deal", or call-to-action buttons
-- No glowing neon sci-fi effects
-- No floating holographic UI elements
-- No obviously AI-generated synthetic faces
-- No plastic-looking 3D renders
-- No generic stock photo poses
-
-FORMAT: {aspect_ratio}
+    system = """
+You are a photographic campaign art director. Interpret the supplied activity
+dynamically. Create a rich photographic montage whose message is understandable
+without reading words. Do not substitute a generic portrait.
+Return JSON with composition (overall arrangement), topic_visual_direction
+(the specific message), central_visual (one recognizable focal subject or symbol),
+scenes (3-5 objects each containing action, setting, meaning, placement, goal_indices),
+colors (string array), objects (string array), avoid (string array), layout_notes.
+Each scene must show a different concrete action supporting the requested message.
+goal_indices is an array of zero-based communication_goals indices illustrated
+by that scene. A scene can cover several related goals.
+Cover EVERY communication goal in the plan, prioritizing the requested action.
+Use recognizable subject-specific symbols and literal actions. Avoid decorative
+stones, feathers or abstract objects when they obscure the subject. Supporting
+lifestyle scenes must not replace the requested care or educational action.
+Arrange scenes around the central visual with soft photographic blends, consistent
+lighting, believable anatomy, natural skin and fabric textures.
+The central subject must dominate, with 2-4 smaller supporting moments. Choose
+flowing blends, layered photography or a shared environment dynamically; do not
+default to a grid of equal circular cutouts. Prefer recognizable literal subjects.
+Depict procedures and equipment only when confidently plausible; use consultation
+or supportive interactions if uncertain. Never invent a machine or procedure.
+Meaning comes from actions and objects, not labels or dashboards.
+Relevant symbolic objects and tasteful anatomical illustrations are allowed;
+people and environments remain photographic. Symbols must not imply unsupported
+treatments, cures, transmission routes or guaranteed protection.
+Do not invent organizations, products, facts or campaign claims.
+Use a respectful constructive mood; exclude gore and stigmatizing imagery.
+No writing, signs, lettering, logos or watermarks. Reserve a quiet shallow bottom
+strip for application-added copy; keep faces and focal objects above it.
 """
-
-    # On retry, append the QA feedback so kie.ai avoids the same issues
-    if previous_issues:
-        image_prompt += f"\nPREVIOUS ISSUES TO FIX:\n" + "\n".join(f"- {i}" for i in previous_issues)
-
-    return {
-        "creative_brief": brief,
-        "image_prompt": image_prompt.strip(),
-        "selected_concept": selected_concept,
-    }
+    context = json.dumps({
+        "request": state.get("user_prompt", ""),
+        "campaign": state.get("campaign_plan", {}),
+        "message": state.get("costar_brief", {}),
+        "feedback": state.get("quality_issues", []),
+    }, ensure_ascii=False)
+    feedback = ""
+    for attempt in range(3):
+        brief = ask_json(system, context + (
+            "\nInclude all required fields and 3-5 complete distinct scenes."
+            if attempt else "") + feedback)
+        if not _valid(brief):
+            feedback = (
+                "\nRepair the previous JSON: require nonempty composition, topic_visual_direction, "
+                "central_visual; 3-5 scenes each with nonempty action, setting, meaning, placement; "
+                "avoid must be a string array (empty allowed). Previous response: "
+                + json.dumps(brief, ensure_ascii=False))
+            failure = "missing or invalid required scene fields"
+            continue
+        goals = state.get("campaign_plan", {}).get("communication_goals", [])
+        covered = set().union(*(_goal_ids(s) for s in brief["scenes"]))
+        if goals and not set(range(len(goals))).issubset(covered):
+            missing = sorted(set(range(len(goals))) - covered)
+            failure = "uncovered campaign goals: " + ", ".join(str(goals[i]) for i in missing)
+            feedback = "\nRepair the brief; scenes may cover multiple goals. " + failure + "\nPrevious brief: " + json.dumps(brief)
+            continue
+        review = ask_json(
+            "Review semantic alignment against the ORIGINAL request, including all Context clauses. "
+            "Reject omitted action goals, unrelated visual metaphors, misleading health claims, "
+            "or insensitive tone. Return JSON with approved (boolean) and issues (string array).",
+            context + "\nProposed visual brief: " + json.dumps(brief, ensure_ascii=False))
+        if isinstance(review, dict) and review.get("approved") is True:
+            brief["alignment_review"] = review
+            break
+        feedback = "\nRevise these alignment issues: " + json.dumps(review, ensure_ascii=False)
+        failure = "relevance review did not approve: " + json.dumps(review, ensure_ascii=False)
+    else:
+        raise ValueError("Creative brief could not pass after 3 attempts: " + failure
+                         + ". Image generation was not started.")
+    profile = state.get("business_profile", {})
+    colors = brief.get("colors", [])
+    colors = [c for c in colors if isinstance(c, str)] if isinstance(colors, list) else []
+    accents = [profile.get("primary_color"), profile.get("accent_color")]
+    palette = ", ".join(colors + [c for c in accents if isinstance(c, str) and c])
+    scenes = "\n".join(
+        f"{i+1}. {s['placement']}: {s['action']}. Setting: {s['setting']}. "
+        f"Visual meaning: {s['meaning']}." for i, s in enumerate(brief["scenes"]))
+    request = state.get("user_prompt", "").lower()
+    ratio = "9:16" if "9:16" in request else "16:9" if "16:9" in request or "landscape" in request else "1:1"
+    prompt = f"""Create a premium photographic campaign montage.
+MESSAGE TO COMMUNICATE WITHOUT WORDS: {brief['topic_visual_direction']}
+CENTRAL FOCAL VISUAL: {brief['central_visual']}
+COMPOSITION: {brief['composition']}
+REQUIRED CONNECTED SCENES (include every scene):
+{scenes}
+LAYOUT: {brief.get('layout_notes', '')}
+PALETTE: {palette}. Preserve natural skin tones.
+Photorealistic people, authentic actions, detailed real materials, coherent natural
+light, polished photographic compositing. One dominant focal visual; secondary
+scenes clearly readable at social-post size. Soft transitions, no crowded grid.
+Relevant nonverbal symbols are allowed. No text, letters, numbers, labels, signs,
+captions, logos, watermarks, fake writing or interface panels.
+Keep the bottom 25 percent quiet for copy added later; keep faces unobstructed.
+Reserve the upper-left 28 percent width and 14 percent height for the brand logo.
+Avoid: {', '.join(brief['avoid'])}.
+FORMAT: {ratio}
+"""
+    return {"creative_brief": brief, "image_prompt": prompt.strip(),
+            "selected_concept": {"visual_story": brief["topic_visual_direction"]}}

@@ -41,6 +41,9 @@ class CampaignState(TypedDict, total=False):
     quality_score: float
     quality_approved: bool
     quality_issues: list
+    quality_suggestions: list
+    quality_critical_issues: list
+    quality_rejection_reason: str
 
     # loop control
     retry_count: int

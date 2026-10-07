@@ -6,12 +6,10 @@ QUALITY_THRESHOLD = 75  # background image only; compositor adds the infographic
 
 # Layout zones the background image must respect for the compositor overlay
 _LAYOUT_ZONES = (
-    "The image will have an infographic overlay. Check these layout zones:\n"
-    "1. LEFT HALF must be clean and dark enough for white text panels to be legible over it.\n"
-    "2. TOP 9% must be a solid dark strip (brand bar area).\n"
-    "3. BOTTOM 20% must fade to near-black (hashtag footer area).\n"
-    "4. Hero subject should be on the RIGHT half or center-right.\n"
-    "Penalise heavily if the left half is busy, bright, or cluttered."
+    "Bottom 25%: quiet background without faces, essential actions or focal objects. "
+    "Upper-left 28% width by 14% height: quiet space for the original brand logo. "
+    "Elsewhere: one dominant subject with 2-4 smaller supporting scenes. "
+    "Do not demand dark strips; the application adds a fitted gradient later."
 )
 
 
@@ -38,16 +36,26 @@ def quality_agent_node(state: CampaignState) -> CampaignState:
 
     result = evaluate_image(state["generated_image_path"], requirements)
     score = result.get("score", 0)
-    issues = result.get("issues", [])
+    suggestions = result.get("issues", [])
+    critical = result.get("critical_issues", [])
+    issues = critical + suggestions
 
     # the decision happens here, in code — not inside the AI's response
     # A publish-ready campaign needs a higher bar than a merely usable image.
-    approved = score >= QUALITY_THRESHOLD
+    approved = score >= QUALITY_THRESHOLD and not result.get("critical_issues")
+    reasons = []
+    if score < QUALITY_THRESHOLD:
+        reasons.append(f"score {score} is below {QUALITY_THRESHOLD}")
+    if critical:
+        reasons.append("critical defect: " + "; ".join(critical))
 
     return {
         "quality_score": score,
         "quality_approved": approved,
         "quality_issues": issues,
+        "quality_suggestions": suggestions,
+        "quality_critical_issues": critical,
+        "quality_rejection_reason": "; ".join(reasons),
         "retry_count": state.get("retry_count", 0) + 1,
     }
 
