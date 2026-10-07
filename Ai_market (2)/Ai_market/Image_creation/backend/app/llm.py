@@ -1,9 +1,7 @@
 """
 Single place that handles all AI calls:
 - Text reasoning (Planner, Strategist, Creative Director, Content Agent)
-  → OpenRouter: apodex/apodex-1.1-mini:free
-- Vision QA (Quality Agent)
-  → Gemini (only model here that can see images)
+  → Gemini 2.5 Flash (google-generativeai)
 - Image generation
   → kie.ai
 """
@@ -12,31 +10,25 @@ import os
 import json
 import time
 import requests
-from openai import OpenAI
+import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
 
-_openrouter_client = None
-OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "apodex/apodex-1.1-mini:free")
+GEMINI_MODEL = "gemini-2.5-flash"
 KIE_BASE_URL = "https://api.kie.ai"
 
 
-def get_openrouter_client():
-    """OpenRouter client — used for all text reasoning agents."""
-    global _openrouter_client
-    if _openrouter_client is None:
-        api_key = os.environ.get("OPENROUTER_API_KEY")
-        if not api_key:
-            raise RuntimeError(
-                "OPENROUTER_API_KEY not set. Get a free key at "
-                "https://openrouter.ai"
-            )
-        _openrouter_client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=api_key,
+def _get_gemini_client():
+    """Configure and return the Gemini generative model."""
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "GEMINI_API_KEY not set. Get a free key at "
+            "https://aistudio.google.com/apikey"
         )
-    return _openrouter_client
+    genai.configure(api_key=api_key)
+    return genai.GenerativeModel(GEMINI_MODEL)
 
 
 def _call_with_retry(fn, max_attempts=3, base_delay=2):
@@ -84,42 +76,27 @@ def _repair_json(text: str) -> str:
 
 
 def ask_json(system_prompt: str, user_prompt: str, model: str = None) -> dict:
-    """Ask OpenRouter for a structured JSON response. Never raises on parse errors
-    — returns an empty dict as last resort so the pipeline always continues."""
-    client = get_openrouter_client()
-    used_model = model or OPENROUTER_MODEL
+    """Ask Gemini 2.5 Flash for a structured JSON response. Never raises on parse
+    errors — returns an empty dict as last resort so the pipeline always continues."""
+    full_prompt = (
+        system_prompt
+        + "\n\nIMPORTANT: Respond ONLY with a single valid JSON object. "
+        "Use double quotes for all keys and string values. "
+        "No markdown, no code fences, no explanation before or after. "
+        "Keep every string value under 150 characters."
+        f"\n\n{user_prompt}"
+    )
 
     def _call():
-        response = client.chat.completions.create(
-            model=used_model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        system_prompt
-                        + "\n\nIMPORTANT: Respond ONLY with a single valid JSON object. "
-                        "Use double quotes for all keys and string values. "
-                        "No markdown, no code fences, no explanation before or after. "
-                        "Keep every string value under 150 characters."
-                    ),
-                },
-                {"role": "user", "content": user_prompt},
-            ],
-            max_tokens=8192,
-            temperature=0.7,
+        client = _get_gemini_client()
+        response = client.generate_content(
+            full_prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.7,
+                max_output_tokens=8192,
+            ),
         )
-        message = response.choices[0].message
-        content = message.content
-        if not content:
-            try:
-                msg_dict = message.model_dump()
-                for key, value in msg_dict.items():
-                    if key not in ("role", "tool_calls", "function_call") and isinstance(value, str) and value.strip():
-                        content = value
-                        break
-            except Exception:
-                pass
-        return content or ""
+        return response.text or ""
 
     raw = ""
     for attempt in range(3):

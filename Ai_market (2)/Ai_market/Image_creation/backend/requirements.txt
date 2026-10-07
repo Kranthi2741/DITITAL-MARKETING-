@@ -2,7 +2,7 @@ fastapi
 uvicorn[standard]
 langgraph
 langchain-core
-openai
+google-generativeai
 requests
 pillow
 python-dotenv
