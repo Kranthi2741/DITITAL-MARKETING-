@@ -1513,7 +1513,8 @@ function runCampaignWithImages(scheduledCampaigns = null, imageIds = [], promptO
   totalCampaigns++;
   document.getElementById("statTotal").textContent = totalCampaigns;
 
-  const ws = new WebSocket(`ws://${location.host}/ws/campaign`);
+  const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:";
+  const ws = new WebSocket(`${wsProtocol}//${location.host}/ws/campaign`);
 
   ws.onopen = () => ws.send(JSON.stringify({
     prompt,
