@@ -3,7 +3,7 @@ Single place that handles all AI calls:
 - Text reasoning (Planner, Strategist, Creative Director, Content Agent)
   → local Ollama Gemma 3
 - Image generation
-  → kie.ai
+  → SingularityAPI gpt-image-2
 """
 
 import os
@@ -16,7 +16,8 @@ load_dotenv()
 
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3:4b")
-KIE_BASE_URL = "https://api.kie.ai"
+SINGULARITY_BASE_URL = "https://api.singularityapi.dev/v1"
+SINGULARITY_MODEL = "gpt-image-2"
 
 
 def _ollama_generate(prompt: str) -> str:
@@ -140,63 +141,39 @@ def ask_json(system_prompt: str, user_prompt: str, model: str = None) -> dict:
 
 
 def generate_image(prompt: str, output_path: str) -> str:
-    """Generate an image via kie.ai and save it to output_path."""
-    api_key = os.environ.get("KIE_API_KEY")
+    """Generate an image via SingularityAPI and save it to output_path."""
+    api_key = os.environ.get("SINGULARITY_API_KEY", "").strip()
     if not api_key:
-        raise RuntimeError("KIE_API_KEY not set. Get a key at https://kie.ai")
+        raise RuntimeError("SINGULARITY_API_KEY not set. Add it to backend/.env")
 
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-    # Detect aspect ratio from the prompt itself
-    prompt_lower = prompt.lower()
-    if "16:9" in prompt_lower or "landscape" in prompt_lower:
-        aspect_ratio = "16:9"
-    elif "9:16" in prompt_lower or "portrait" in prompt_lower:
-        aspect_ratio = "9:16"
-    else:
-        aspect_ratio = "1:1"
-
-    # Step 1: create task
+    # gpt-image-2 accepts the same 1024x1024 size used by the connectivity test.
     payload = {
-        "model": "qwen2-1/text-to-image",
-        "input": {
-            "prompt": prompt,
-            "aspect_ratio": aspect_ratio,
-            "resolution": "1K",
-            "output_format": "png",
-        },
+        "model": SINGULARITY_MODEL,
+        "prompt": prompt,
+        "size": "1024x1024",
+        "quality": "low",
+        "n": 1,
+        "output_format": "png",
     }
-    resp = requests.post(f"{KIE_BASE_URL}/api/v1/jobs/createTask", headers=headers, json=payload, timeout=60)
+    resp = requests.post(
+        f"{SINGULARITY_BASE_URL}/images/generations",
+        headers=headers,
+        json=payload,
+        timeout=180,
+    )
     resp.raise_for_status()
-    result = resp.json()
-    if result.get("code") != 200:
-        raise RuntimeError(f"kie.ai task creation failed: {result.get('msg')}")
-    task_id = result["data"]["taskId"]
+    try:
+        encoded = resp.json()["data"][0]["b64_json"]
+        import base64
+        image_bytes = base64.b64decode(encoded)
+    except (ValueError, KeyError, IndexError, TypeError) as exc:
+        raise RuntimeError(f"SingularityAPI returned no valid base64 image: {exc}") from exc
 
-    # Step 2: poll until done
-    poll_headers = {"Authorization": f"Bearer {api_key}"}
-    for _ in range(60):  # max ~3 minutes
-        time.sleep(3)
-        poll = requests.get(f"{KIE_BASE_URL}/api/v1/jobs/recordInfo", headers=poll_headers, params={"taskId": task_id}, timeout=30)
-        poll.raise_for_status()
-        data = poll.json().get("data", {})
-        success_flag = data.get("successFlag")
-        state = data.get("state", "")
-
-        if success_flag == 1 or state == "success":
-            urls = data.get("response", {}).get("resultUrls", [])
-            if not urls:
-                raise RuntimeError("kie.ai returned success but no image URL")
-            img_resp = requests.get(urls[0], timeout=60)
-            img_resp.raise_for_status()
-            with open(output_path, "wb") as f:
-                f.write(img_resp.content)
-            return output_path
-
-        if success_flag == 2 or state == "failed":
-            raise RuntimeError(f"kie.ai image generation failed: {data.get('failMsg') or data.get('errorMessage')}")
-
-    raise RuntimeError("kie.ai image generation timed out after 3 minutes")
+    with open(output_path, "wb") as image_file:
+        image_file.write(image_bytes)
+    return output_path
 
 
 def evaluate_image(image_path: str, requirements: dict) -> dict:
@@ -217,6 +194,9 @@ def evaluate_image(image_path: str, requirements: dict) -> dict:
         "anatomy and faces or essential actions in reserved copy/logo areas. "
         "Judge requested safe areas using layout_zones. Logo and copy are added later; "
         "do not penalize their absence. Be specific about visible defects and locations. "
+        "Judge coverage only against visual_goals. Caption goals such as resources, "
+        "links and explanations are fulfilled later and must not cause image rejection. "
+        "Delivery requirements are not scene requirements. "
         "Do not assume the image followed its prompt. Requirements: "
         + json.dumps(requirements, ensure_ascii=False)
     )

@@ -1591,17 +1591,21 @@ function runCampaignWithImages(scheduledCampaigns = null, imageIds = [], promptO
         time: timestamp(),
       });
       const costar = msg.state.costar_brief || {};
-      agentLogs.planner.push({
-        message: `<strong>CO-STAR brief</strong><br>` +
-          `<b>Context:</b> ${costar.context || "Preparing..."}<br>` +
-          `<b>Objective:</b> ${costar.objective || "Preparing..."}<br>` +
-          `<b>Style:</b> ${costar.style || "Preparing..."}<br>` +
-          `<b>Tone:</b> ${costar.tone || "Preparing..."}<br>` +
-          `<b>Audience:</b> ${costar.audience || "Preparing..."}<br>` +
-          `<b>Response:</b> ${costar.response || "Preparing..."}`,
-        kind: "neutral",
-        time: timestamp(),
-      });
+      const hasCostar = ["context", "objective", "style", "tone", "audience", "response"]
+        .some(field => String(costar[field] || "").trim());
+      if (hasCostar) {
+        agentLogs.planner.push({
+          message: `<strong>CO-STAR brief</strong><br>` +
+            `<b>Context:</b> ${costar.context || "Not specified"}<br>` +
+            `<b>Objective:</b> ${costar.objective || "Not specified"}<br>` +
+            `<b>Style:</b> ${costar.style || "Not specified"}<br>` +
+            `<b>Tone:</b> ${costar.tone || "Not specified"}<br>` +
+            `<b>Audience:</b> ${costar.audience || "Not specified"}<br>` +
+            `<b>Response:</b> ${costar.response || "Not specified"}`,
+          kind: "neutral",
+          time: timestamp(),
+        });
+      }
     }
     if (key === "creative_director" && msg.state && msg.state.image_prompt) {
       agentLogs.planner.push({

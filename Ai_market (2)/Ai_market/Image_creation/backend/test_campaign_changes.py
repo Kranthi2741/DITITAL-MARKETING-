@@ -11,6 +11,42 @@ from app.agents import creative_director as cd
 from app.agents.compositor import compose, logo_file
 
 class CampaignChecks(unittest.TestCase):
+    def test_resource_goal_does_not_require_image_scene(self):
+        brief = {"composition":"Connected scenes","topic_visual_direction":"Community care",
+                 "central_visual":"Support","avoid":[],
+                 "scenes":[dict(action="Consultation", setting="Office", meaning="Care",
+                                placement="left",goal_indices=[0]) for _ in range(3)]}
+        state = {"user_prompt":"Awareness and resources for further information",
+                 "campaign_plan":{"visual_goals":["Show supportive care"],
+                                  "caption_goals":["Offer resources for further information"],
+                                  "delivery_requirements":["Instagram"],
+                                  "communication_goals":["Show supportive care",
+                                                         "Offer resources for further information"]}}
+        with patch.object(cd,"ask_json",side_effect=[brief, {"approved":True,"issues":[]}]) as calls:
+            result = cd.creative_director_node(state)
+            self.assertEqual(calls.call_count, 2)
+            self.assertIn("Consultation", result["image_prompt"])
+
+    def test_planner_preserves_goal_groups(self):
+        from app.agents import planner
+        plan = {"visual_goals":["Show care"],"caption_goals":["Offer resources"],
+                "delivery_requirements":["Instagram"],"objective":"Awareness"}
+        with patch.object(planner,"ask_json",return_value={"campaign_plan":plan,"costar":{}}):
+            result = planner.planner_node({"user_prompt":"Context: Awareness\nObjective: Instagram"})
+        self.assertEqual(result["campaign_plan"]["communication_goals"], ["Show care","Offer resources"])
+        self.assertEqual(result["campaign_plan"]["delivery_requirements"], ["Instagram"])
+
+    def test_caption_resource_request_is_checked(self):
+        from app.agents import content_agent
+        state = {"user_prompt":"Offer resources",
+                 "campaign_plan":{"caption_goals":["Offer resources"]}}
+        with patch.object(content_agent,"ask_json",side_effect=[
+                {"caption":"Ask your care team for reliable information.","hashtags":[]},
+                {"approved":True,"issues":[]}]) as calls:
+            result = content_agent.content_agent_node(state)
+        self.assertIn("care team", result["caption"])
+        self.assertIn("Offer resources", calls.call_args.args[1])
+
     def test_multiple_goals_per_scene(self):
         self.assertEqual(cd._goal_ids({"goal_indices": [0, "1", 2]}), {0,1,2})
         self.assertEqual(cd._goal_ids({"goal_index": "3"}), {3})

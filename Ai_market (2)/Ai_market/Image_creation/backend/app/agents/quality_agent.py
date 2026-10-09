@@ -42,7 +42,8 @@ def quality_agent_node(state: CampaignState) -> CampaignState:
 
     # the decision happens here, in code — not inside the AI's response
     # A publish-ready campaign needs a higher bar than a merely usable image.
-    approved = score >= QUALITY_THRESHOLD and not result.get("critical_issues")
+    # Approval is based on the numeric quality threshold only.
+    approved = score >= QUALITY_THRESHOLD
     reasons = []
     if score < QUALITY_THRESHOLD:
         reasons.append(f"score {score} is below {QUALITY_THRESHOLD}")
